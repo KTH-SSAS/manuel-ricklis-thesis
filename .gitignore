@@ -20,3 +20,7 @@ build/
 
 # Project specific
 # Add your project's specific ignores here
+
+Generator/\.idea/
+
+Generator/out/
