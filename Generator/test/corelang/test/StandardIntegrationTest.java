@@ -2,9 +2,11 @@ package corelang.test;
 
 import core.AttackStep;
 import core.Attacker;
+import graph.AttackNode;
 import org.junit.jupiter.api.Test;
 import test.*;
 import test.System;
+import graph.AttackGraph;
 
 public class StandardIntegrationTest extends CoreLangTest {
     public class StandardIntegrationTestModel {
@@ -106,17 +108,25 @@ public class StandardIntegrationTest extends CoreLangTest {
     }
 
     @Test
-    public void oracleServerIAMTest() {
+    public void attackGraphGeneratorTest() {
         printTestName(Thread.currentThread().getStackTrace()[1].getMethodName());
 
         var model = new StandardIntegrationTestModel();
 
-        AttackStep entryPoint = model.workstn2.fullAccess;
-        AttackStep target = model.mailClient.read;
+//        AttackStep entryPoint = model.workstn2.fullAccess;
+//        AttackStep target = model.mailClient.read;
 
-        var atk = new Attacker(entryPoint, target);
+        AttackStep entryPoint = model.lan1.access;
+        AttackStep target = model.mailDb.deny;
+
+        var atk = new Attacker();
         model.addAttacker(atk, entryPoint);
         atk.attack();
+
+        // the attack graph is built here with all relevant steps concerning the target asset
+        AttackGraph attackGraph = new AttackGraph(entryPoint, target);
+        attackGraph.expandGraph();
+        attackGraph.printGraph();
 
         model.assertModel(target);
     }

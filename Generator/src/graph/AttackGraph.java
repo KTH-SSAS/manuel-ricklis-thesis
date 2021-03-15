@@ -13,17 +13,26 @@ import java.util.ArrayList;
         * define F(x, a) correctly
 */
 
+/**
+ * Attack graph represented by an entry point and target node.
+ * Attack nodes know their parents and children, thus forming the edges.
+ */
 public class AttackGraph {
-    private final AttackStep entryPoint;
-    private final AttackStep target;
+    private final AttackStep entryPointStep;
+    private final AttackStep targetStep;
+
+    private AttackNode entryPointNode;
+    private final AttackNode targetNode;
 
     private static final ArrayList<AttackStep> seenNodes = new ArrayList<>();
 
     private final ArrayList<Double> valueFunction = new ArrayList<>();
 
-    public AttackGraph(AttackStep entryPoint, AttackStep target) {
-        this.entryPoint = entryPoint;
-        this.target = target;
+    public AttackGraph(AttackStep entryPointStep, AttackStep targetStep) {
+        this.entryPointStep = entryPointStep;
+        this.targetStep = targetStep;
+
+        this.targetNode = new AttackNode(targetStep);
     }
 
     // ################################################ GRAPH ##########################################################
@@ -32,18 +41,24 @@ public class AttackGraph {
      * Expands the attack graph with the visited parents
      * Seen nodes are not followed up in case of cycles in the graph
      *
-     * @param node The node to be expanded. Must be target node for first function call.
+     * @param step The step to be expanded. Must be target attack step for first function call.
+     * @param node The attack node corresponding to the attack step
      */
-    public void expandGraph(AttackStep node) {
-        if (seenNodes.contains(node) || node.equals(entryPoint)) {
+    public void expandGraph(AttackStep step, AttackNode node) {
+        if (seenNodes.contains(step)) {
+            return;
+        } else if (step.equals(entryPointStep)) {
+            entryPointNode = node;
             return;
         }
 
-        seenNodes.add(node);
+        seenNodes.add(step);
 
-        for (AttackStep as : node.visitedParents) {
-            as.addChild(node);
-            expandGraph(as);
+        for (AttackStep as : step.visitedParents) {
+            AttackNode parentNode = new AttackNode(as);
+            node.addParent(parentNode);
+            parentNode.addChild(node);
+            expandGraph(as, parentNode);
         }
     }
 
@@ -51,51 +66,60 @@ public class AttackGraph {
      * Starts the expanding process with the target node
      */
     public void expandGraph() {
-        expandGraph(target);
+        expandGraph(targetStep, targetNode);
     }
 
     // ############################################## VALUE ############################################################
-
-    public void calculateValueFunction() {
-    }
-
-    // discount factor
-    private final float beta = 0.8f;
-
-    private double bellmanEquation(AttackStep x, int index) {
-        double value = 0;
-        double max = Double.MIN_VALUE;
-        for (AttackStep as : x.getChildren()) {
-            value = F(x, as) + beta * bellmanEquation(as, index + 1);
-            if (value > max) {
-                max = value;
-            }
-        }
-
-        this.valueFunction.add(index, value);
-        return value;
-    }
-
-    private double F(AttackStep x, AttackStep as) {
-        return as.ttc == 0 ? 0 : 1.0 / as.ttc;
-    }
+//
+//    public void calculateValueFunction() {
+//    }
+//
+//    // discount factor
+//    private final float beta = 0.8f;
+//
+//    private double bellmanEquation(AttackNode x, int index) {
+//        double value = 0;
+//        double max = Double.MIN_VALUE;
+//        for (AttackNode as : x.getChildren()) {
+//            value = F(x, as) + beta * bellmanEquation(as, index + 1);
+//            if (value > max) {
+//                max = value;
+//            }
+//        }
+//
+//        this.valueFunction.add(index, value);
+//        return value;
+//    }
+//
+//    private double F(AttackNode x, AttackNode as) {
+//        return as.ttc == 0 ? 0 : 1.0 / as.ttc;
+//    }
 
     // ########################################### HELPERS #############################################################
 
     public void printGraph() {
-        printGraph(entryPoint);
+        printGraph(entryPointNode);
     }
 
-    private static final ArrayList<AttackStep> seenNodes2 = new ArrayList<>();
-    public void printGraph(AttackStep node) {
-        if (seenNodes2.contains(node)) {
+    private static final ArrayList<AttackNode> seenNodesPrint = new ArrayList<>();
+
+    public void printGraph(AttackNode node) {
+        if (seenNodesPrint.contains(node)) {
             return;
         }
 
-        System.out.println(node + " " + node.fullName());
-        seenNodes2.add(node);
-        for (AttackStep as : node.getChildren()) {
+        System.out.println(node + " " + node.getName());
+        seenNodesPrint.add(node);
+        for (AttackNode as : node.getChildren()) {
             printGraph(as);
         }
+    }
+
+    public AttackNode getTargetNode() {
+        return targetNode;
+    }
+
+    public AttackNode getEntryPointNode() {
+        return entryPointNode;
     }
 }

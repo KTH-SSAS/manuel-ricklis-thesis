@@ -1,12 +1,14 @@
 package core;
 
-import graph.AttackGraph;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,26 +16,10 @@ public class Attacker {
     private static final Pattern distributionPattern =
             Pattern.compile("^([a-zA-Z]+)(?:\\((?:([0-9.]+)(?:, ([0-9.]+))?)?\\))?$");
 
-
     protected Set<AttackStep> activeAttackSteps = new HashSet<>();
     public boolean verbose = false;
     private static final String defaultProfile = "attackerProfile.ttc";
     protected static Map<String, Double> ttcHashMap = new HashMap<>();
-
-    private AttackStep entryPoint;
-    private AttackStep target;
-
-    public Attacker(AttackStep entryPoint, AttackStep target) {
-        verbose = false;
-        this.entryPoint = entryPoint;
-        this.target = target;
-    }
-
-    public Attacker(boolean verbose, AttackStep entryPoint, AttackStep target) {
-        this.verbose = verbose;
-        this.entryPoint = entryPoint;
-        this.target = target;
-    }
 
     public Attacker() {
         verbose = false;
@@ -180,6 +166,7 @@ public class Attacker {
                         Asset.allAssets.size(), AttackStep.allAttackSteps.size()));
         AttackStep currentAttackStep = null;
         debugPrint(String.format("AttackStep.allAttackSteps = %s", AttackStep.allAttackSteps));
+
         for (AttackStep attackStep : AttackStep.allAttackSteps) {
             attackStep.setExpectedParents();
             debugPrint(
@@ -189,7 +176,6 @@ public class Attacker {
         }
 
         for (Defense defense : Defense.allDefenses) {
-
             if (!defense.isEnabled()) {
                 addAttackPoint(defense.disable);
             }
@@ -202,10 +188,5 @@ public class Attacker {
             currentAttackStep.updateChildren(activeAttackSteps);
             activeAttackSteps.remove(currentAttackStep);
         }
-
-        // the attack graph is built here with all relevant steps concerning the target asset
-        AttackGraph attackGraph = new AttackGraph(entryPoint, target);
-        attackGraph.expandGraph();
-        attackGraph.printGraph(entryPoint);
     }
 }
