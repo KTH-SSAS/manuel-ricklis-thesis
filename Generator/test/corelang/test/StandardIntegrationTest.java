@@ -8,6 +8,9 @@ import test.*;
 import test.System;
 import graph.AttackGraph;
 
+import java.io.File;
+import java.io.IOException;
+
 public class StandardIntegrationTest extends CoreLangTest {
     public class StandardIntegrationTestModel {
         public final System workstn1 = new System("workstn1");
@@ -129,5 +132,7 @@ public class StandardIntegrationTest extends CoreLangTest {
         attackGraph.printGraph();
 
         model.assertModel(target);
+
+        attackGraph.exportGraph("test");
     }
 }

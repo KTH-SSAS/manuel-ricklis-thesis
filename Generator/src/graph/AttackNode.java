@@ -17,6 +17,15 @@ public class AttackNode {
         return this.children;
     }
 
+    public ArrayList<String> getChildrenNames() {
+        ArrayList<String> names = new ArrayList<>();
+        for (AttackNode child : children) {
+            names.add(child.getName());
+        }
+
+        return names;
+    }
+
     public void addChild(AttackNode child) {
         children.add(child);
     }
@@ -31,5 +40,14 @@ public class AttackNode {
 
     public String getName() {
         return this.name;
+    }
+
+    public ArrayList<String> getParentNames() {
+        ArrayList<String> names = new ArrayList<>();
+        for (AttackNode parent : parents) {
+            names.add(parent.getName());
+        }
+
+        return names;
     }
 }

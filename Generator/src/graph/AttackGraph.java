@@ -2,7 +2,13 @@ package graph;
 
 import core.AttackStep;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+
+import org.json.*;
 
 /*
     TODO:
@@ -25,6 +31,8 @@ public class AttackGraph {
     private final AttackNode targetNode;
 
     private static final ArrayList<AttackStep> seenNodes = new ArrayList<>();
+    private static final ArrayList<AttackNode> allNodes = new ArrayList<>();
+
 
     private final ArrayList<Double> valueFunction = new ArrayList<>();
 
@@ -33,6 +41,7 @@ public class AttackGraph {
         this.targetStep = targetStep;
 
         this.targetNode = new AttackNode(targetStep);
+        allNodes.add(targetNode);
     }
 
     // ################################################ GRAPH ##########################################################
@@ -55,7 +64,13 @@ public class AttackGraph {
         seenNodes.add(step);
 
         for (AttackStep as : step.visitedParents) {
+            if (as.visitedParents.isEmpty() && !as.equals(entryPointStep)) {
+                continue;
+            }
+
+
             AttackNode parentNode = new AttackNode(as);
+            allNodes.add(parentNode);
             node.addParent(parentNode);
             parentNode.addChild(node);
             expandGraph(as, parentNode);
@@ -67,6 +82,49 @@ public class AttackGraph {
      */
     public void expandGraph() {
         expandGraph(targetStep, targetNode);
+    }
+
+    // ########################################### HELPERS #############################################################
+
+    public void exportGraph(String fileName) {
+        JSONObject obj = new JSONObject();
+
+        for (AttackNode node : allNodes) {
+            obj.put(node.getName(), node.getParentNames().toArray());
+        }
+
+        try (FileWriter file = new FileWriter("GraphFiles/" + System.currentTimeMillis() + "-" + fileName + ".json")) {
+            file.write(obj.toString());
+            file.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printGraph() {
+        printGraph(targetNode);
+    }
+
+    private static final ArrayList<AttackNode> seenNodesPrint = new ArrayList<>();
+
+    public void printGraph(AttackNode node) {
+        if (seenNodesPrint.contains(node)) {
+            return;
+        }
+
+        System.out.println(node.getName() + " " + node.getParentNames());
+        seenNodesPrint.add(node);
+        for (AttackNode as : node.getParents()) {
+            printGraph(as);
+        }
+    }
+
+    public AttackNode getTargetNode() {
+        return targetNode;
+    }
+
+    public AttackNode getEntryPointNode() {
+        return entryPointNode;
     }
 
     // ############################################## VALUE ############################################################
@@ -95,31 +153,4 @@ public class AttackGraph {
 //        return as.ttc == 0 ? 0 : 1.0 / as.ttc;
 //    }
 
-    // ########################################### HELPERS #############################################################
-
-    public void printGraph() {
-        printGraph(entryPointNode);
-    }
-
-    private static final ArrayList<AttackNode> seenNodesPrint = new ArrayList<>();
-
-    public void printGraph(AttackNode node) {
-        if (seenNodesPrint.contains(node)) {
-            return;
-        }
-
-        System.out.println(node + " " + node.getName());
-        seenNodesPrint.add(node);
-        for (AttackNode as : node.getChildren()) {
-            printGraph(as);
-        }
-    }
-
-    public AttackNode getTargetNode() {
-        return targetNode;
-    }
-
-    public AttackNode getEntryPointNode() {
-        return entryPointNode;
-    }
 }
