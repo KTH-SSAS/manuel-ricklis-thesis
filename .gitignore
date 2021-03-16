@@ -21,7 +21,9 @@ build/
 # Project specific
 # Add your project's specific ignores here
 
-Generator/\.idea/
+*.idea
 
 Generator/out/
 *.iml
+ValueApproximator/venv/
+ValueApproximator/Helpers/__pycache__/
