@@ -27,7 +27,7 @@ public class AttackGraph {
     private AttackNode entryPointNode;
     private final AttackNode targetNode;
 
-    private static final ArrayList<AttackStep> seenNodes = new ArrayList<>();
+    private static final ArrayList<String> seenNodes = new ArrayList<>();
     private static final ArrayList<AttackNode> allNodes = new ArrayList<>();
 
 
@@ -51,22 +51,26 @@ public class AttackGraph {
      * @param node The attack node corresponding to the attack step
      */
     public void expandGraph(AttackStep step, AttackNode node) {
-        if (seenNodes.contains(step)) {
+        if (seenNodes.contains(step.fullName())) {
             return;
         } else if (step.equals(entryPointStep)) {
             entryPointNode = node;
             return;
         }
 
-        seenNodes.add(step);
+        seenNodes.add(step.fullName());
 
         for (AttackStep as : step.visitedParents) {
             if (as.visitedParents.isEmpty() && !as.equals(entryPointStep)) {
                 continue;
             }
 
-
-            AttackNode parentNode = new AttackNode(as);
+            AttackNode parentNode;
+            if (seenNodes.contains(as.fullName())) {
+                parentNode = getAttackNodeObj(as.fullName());
+            } else {
+                parentNode = new AttackNode(as);
+            }
             allNodes.add(parentNode);
             node.addParent(parentNode);
             parentNode.addChild(node);
@@ -122,6 +126,16 @@ public class AttackGraph {
 
     public AttackNode getEntryPointNode() {
         return entryPointNode;
+    }
+
+    public AttackNode getAttackNodeObj(String name) {
+        for (AttackNode node : allNodes) {
+            if (node.getName().equals(name)) {
+                return node;
+            }
+        }
+
+        return null;
     }
 
     // ############################################## VALUE ############################################################

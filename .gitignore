@@ -24,6 +24,7 @@ build/
 *.idea
 
 Generator/out/
+Generator/target/
 *.iml
 ValueApproximator/venv/
 ValueApproximator/Helpers/__pycache__/
