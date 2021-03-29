@@ -1,5 +1,7 @@
 # General
 build/
+__pycache__/
+venv/
 
 # Latex generated files
 *.pdf
@@ -26,5 +28,3 @@ build/
 Generator/out/
 Generator/target/
 *.iml
-ValueApproximator/venv/
-ValueApproximator/Helpers/__pycache__/
