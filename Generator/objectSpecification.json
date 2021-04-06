@@ -1,0 +1,515 @@
+{
+  "Object": {
+    "attemptUseVulnerability": 0,
+    "deny": 20,
+    "bypassAccessControl": 0
+  },
+  "System": {
+    "attemptUseVulnerability": 0,
+    "deny": 20,
+    "bypassAccessControl": 0,
+    "connect": 0,
+    "attemptConnect": 0,
+    "attemptUsePhysicalVulnerability": 0,
+    "allPrivilegeAuthenticate": 0,
+    "individualPrivilegeAuthenticate": 0,
+    "attemptGainFullAccess": 0,
+    "fullAccess": 40,
+    "specificAccess": 30,
+    "physicalAccess": 20,
+    "hardwareModificationsProtection": 0
+  },
+  "SoftwareProduct": {
+    "compromiseApplication": 0,
+    "readApplication": 30,
+    "modifyApplication": 40,
+    "denyApplication": 20
+  },
+  "Application": {
+    "attemptUseVulnerability": 0,
+    "deny": 20,
+    "bypassAccessControl": 0,
+    "localConnect": 0,
+    "attemptLocalConnectVuln": 0,
+    "attemptNetworkRequestRespondConnectVuln": 0,
+    "networkConnect": 0,
+    "accessNetworkAndConnections": 30,
+    "networkRequestConnect": 0,
+    "networkRespondConnect": 0,
+    "specificAccessFromLocalConnection": 10,
+    "specificAccessFromNetworkConnection": 20,
+    "specificAccess": 20,
+    "attemptLocalConnectVulnOnHost": 0,
+    "authenticate": 0,
+    "specificAccessAuthenticate": 0,
+    "localAccess": 20,
+    "networkAccess": 20,
+    "fullAccess": 30,
+    "attemptFullAccessAfterSoftProdVulnerability": 0,
+    "attemptReadAfterSoftProdVulnerability": 0,
+    "attemptModifyAfterSoftProdVulnerability": 0,
+    "attemptDenyAfterSoftProdVulnerability": 0,
+    "fullAccessAfterSoftProdVulnerability": 30,
+    "readAfterSoftProdVulnerability": 30,
+    "modifyAfterSoftProdVulnerability": 40,
+    "denyAfterSoftProdVulnerability": 20,
+    "attemptApplicationRespondConnectThroughData": 0,
+    "codeExecutionAfterVulnerability": 30,
+    "read": 30,
+    "modify": 40,
+    "denyFromConnectionRule": 10
+  },
+  "PhysicalZone": {
+    "gainPhysicalAccess": 0
+  },
+  "Information": {
+    "attemptAccess": 0
+  },
+  "Data": {
+    "attemptAccess": 0,
+    "attemptAccessFromIdentity": 0,
+    "access": 30,
+    "authenticated": 0,
+    "accessUnencryptedData": 30,
+    "accessDecryptedData": 30,
+    "dataNotPresent": 0,
+    "readContainedInformationAndData": 50,
+    "attemptApplicationRespondConnect": 0,
+    "applicationRespondConnect": 0,
+    "attemptRead": 0,
+    "identityAttemptRead": 0,
+    "identityRead": 40,
+    "attemptWrite": 0,
+    "identityAttemptWrite": 0,
+    "identityWrite": 30,
+    "attemptDelete": 0,
+    "identityAttemptDelete": 0,
+    "identityDelete": 30,
+    "read": 50,
+    "write": 40,
+    "delete": 30,
+    "attemptDeny": 0,
+    "deny": 20,
+    "attemptEavesdrop": 0,
+    "attemptManInTheMiddle": 0,
+    "eavesdrop": 0,
+    "manInTheMiddle": 0,
+    "compromiseAppOrigin": 0
+  },
+  "Identity": {
+    "twoFactorAuthentication": 0,
+    "attemptAssume": 0,
+    "successfulAssume": 30,
+    "assume": 0
+  },
+  "Group": {
+    "compromiseGroup": 20
+  },
+  "Credentials": {
+    "attemptAccess": 0,
+    "notDisclosed": 0,
+    "useLeakedCredentials": 30,
+    "use": 30,
+    "credentialTheft": 0
+  },
+  "User": {
+    "noPasswordReuse": 0,
+    "oneCredentialCompromised": 0,
+    "passwordReuseCompromise": 0,
+    "attemptSocialEngineering": 0,
+    "attemptCredentialTheft": 0,
+    "credentialTheft": 20,
+    "attemptReverseTakeover": 0,
+    "reverseTakeover": 20,
+    "phishUser": 20,
+    "attemptSteal2FAtoken": 0,
+    "steal2FAtoken": 30,
+    "compromise": 20
+  },
+  "Network": {
+    "physicalAccess": 30,
+    "networkAccessControl": 30,
+    "bypassAccessControl": 0,
+    "attemptAccess": 0,
+    "access": 0,
+    "successfulAccess": 30,
+    "networkForwarding": 0,
+    "denialOfService": 30,
+    "accessNetworkData": 20,
+    "eavesdropDefense": 0,
+    "manInTheMiddleDefense": 0,
+    "eavesdrop": 20,
+    "bypassEavesdropProtection": 0,
+    "manInTheMiddle": 30,
+    "bypassMitMProtection": 0,
+    "eavesdropAfterPhysicalAccess": 0
+  },
+  "RoutingFirewall": {
+    "attemptUseVulnerability": 0,
+    "deny": 20,
+    "bypassAccessControl": 0,
+    "localConnect": 0,
+    "attemptLocalConnectVuln": 0,
+    "attemptNetworkRequestRespondConnectVuln": 0,
+    "networkConnect": 0,
+    "accessNetworkAndConnections": 20,
+    "networkRequestConnect": 0,
+    "networkRespondConnect": 0,
+    "specificAccessFromLocalConnection": 10,
+    "specificAccessFromNetworkConnection": 20,
+    "specificAccess": 20,
+    "attemptLocalConnectVulnOnHost": 0,
+    "authenticate": 0,
+    "specificAccessAuthenticate": 0,
+    "localAccess": 10,
+    "networkAccess": 20,
+    "fullAccess": 30,
+    "attemptFullAccessAfterSoftProdVulnerability": 0,
+    "attemptReadAfterSoftProdVulnerability": 0,
+    "attemptModifyAfterSoftProdVulnerability": 0,
+    "attemptDenyAfterSoftProdVulnerability": 0,
+    "fullAccessAfterSoftProdVulnerability": 30,
+    "readAfterSoftProdVulnerability": 20,
+    "modifyAfterSoftProdVulnerability": 40,
+    "denyAfterSoftProdVulnerability": 20,
+    "attemptApplicationRespondConnectThroughData": 0,
+    "codeExecutionAfterVulnerability": 0,
+    "read": 20,
+    "modify": 40,
+    "denyFromConnectionRule": 20,
+    "denialOfService": 0
+  },
+  "ConnectionRule": {
+    "disabled": 0,
+    "attemptAccessNetworks": 0,
+    "accessNetworks": 30,
+    "attemptConnectToApplications": 0,
+    "connectToApplications": 10,
+    "attemptTransmitResponse": 0,
+    "transmitResponse": 20,
+    "attemptTransmit": 0,
+    "transmit": 20,
+    "attemptDenialOfService": 0,
+    "denialOfService": 30,
+    "attemptEavesdropOnDataInTransit": 0,
+    "eavedropOnDataInTransit": 20,
+    "attemptManInTheMiddleOnDataInTransit": 0,
+    "mainInTheMiddleOnDataInTransit": 30
+  },
+  "ManuallyModeledVulnerability": {
+    "userInteracts": 0
+  },
+  "ManualLowImpactVulnerability": {
+    "userInteracts": 0,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "ManualHighImpactVulnerability": {
+    "userInteracts": 0,
+    "impact": 0
+  },
+  "ManualHighComplexityExploit": {
+    "attemptExploit": 0
+  },
+  "ManualLowComplexityExploit": {
+    "attemptExploit": 0
+  },
+  "AutomaticallyModeledVulnerability": {},
+  "AutomaticLowComplexityVulnerability": {
+    "abuse": 0
+  },
+  "AutomaticHighComplexityVulnerability": {
+    "abuse": 0
+  },
+  "LLNNVulnerability": {
+    "abuse": 0
+  },
+  "LLNRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "LLLNVulnerability": {
+    "abuse": 0
+  },
+  "LLLRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "LLHNVulnerability": {
+    "abuse": 0
+  },
+  "LLHRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "NLNNVulnerability": {
+    "abuse": 0
+  },
+  "NLNRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "NLLNVulnerability": {
+    "abuse": 0
+  },
+  "NLLRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "NLHNVulnerability": {
+    "abuse": 0
+  },
+  "NLHRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "LHNNVulnerability": {
+    "abuse": 0
+  },
+  "LHNRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "LHLNVulnerability": {
+    "abuse": 0
+  },
+  "LHLRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "LHHNVulnerability": {
+    "abuse": 0
+  },
+  "LHHRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "NHNNVulnerability": {
+    "abuse": 0
+  },
+  "NHNRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "NHLNVulnerability": {
+    "abuse": 0
+  },
+  "NHLRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "NHHNVulnerability": {
+    "abuse": 0
+  },
+  "NHHRVulnerability": {
+    "abuse": 0,
+    "userInteracts": 0
+  },
+  "AutomaticExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 0
+  },
+  "HHHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0
+  },
+  "HHLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "HHNExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0
+  },
+  "HLHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "HLLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "HLNExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "HNHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0
+  },
+  "HNLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "HNNExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0
+  },
+  "LHHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "LHLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "LHNExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "LLHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "LLLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "LLNExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "LNHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "LNLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "LNNExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "NHHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0
+  },
+  "NHLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "NHNExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0
+  },
+  "NLHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "NLLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "NLNExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "NNHExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0
+  },
+  "NNLExploit": {
+    "attemptExploit": 0,
+    "denyImpact": 20,
+    "readImpact": 50,
+    "modifyImpact": 40,
+    "impact": 0,
+    "lowImpact": 0
+  }
+}
