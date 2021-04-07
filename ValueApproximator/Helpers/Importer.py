@@ -2,18 +2,11 @@ import json
 import re
 from typing import Dict, List
 
-
-def readJSON() -> dict:
-    with open("../Generator/GraphFiles/test.json") as f:
-        graphData = json.load(f)
-    return graphData
-
-
 def readTTCSpecifications() -> dict:
     ttc_dict = {}
 
-    for fileName in {"../Generator/src/main/mal/VulnerabilityAutomatic.mal",
-                     "../Generator/src/main/mal/VulnerabilityManual.mal"}:
+    for fileName in {"Resources/VulnerabilityAutomatic.mal",
+                     "Resources/VulnerabilityManual.mal"}:
         with open(fileName) as file:
             searchIsActive = False
             activeName = ""
@@ -46,9 +39,9 @@ def readTTCSpecifications() -> dict:
 def readObjectSpecifications(fromMal=False) -> dict:
     objects_dict = {}
     if fromMal:
-        for fileName in {"../Generator/src/main/mal/coreLang.mal",
-                         "../Generator/src/main/mal/VulnerabilityAutomatic.mal",
-                         "../Generator/src/main/mal/VulnerabilityManual.mal"}:
+        for fileName in {"Resources/coreLang.mal",
+                         "Resources/VulnerabilityAutomatic.mal",
+                         "Resources/VulnerabilityManual.mal"}:
             with open(fileName) as file:
                 searchIsActive = False
                 activeAsset = ""

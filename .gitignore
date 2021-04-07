@@ -24,7 +24,5 @@ venv/
 # Add your project's specific ignores here
 
 *.idea
-
-Generator/out/
-Generator/target/
 *.iml
+objectSpecification_*.json
