@@ -31,7 +31,7 @@ class AttackGraph:
 
         # for every item in the graph, their reward is calculated with the reward of reaching the step and the time
         # needed to compromise
-        # for distributions, the maximum effort is assumed which gives a success probability that is later regarder
+        # for distributions, the maximum effort is assumed which gives a success probability that is later regarded
         # in the value iteration
         for item in self.graph.items():
             for entry in item[1]:

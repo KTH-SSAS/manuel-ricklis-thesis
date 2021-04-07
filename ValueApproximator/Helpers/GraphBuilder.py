@@ -16,9 +16,11 @@ def value_iteration(m, gamma=0.9, tolerance=1e-3):
     V = np.zeros(n)
     Q = np.zeros((n, n))
     error = tolerance + 1
+    i = 0
     while error > tolerance:
         Q = (m + gamma * V) * graph.success_probabilities
         new_V = np.max(Q, axis=1)
         error = np.max(np.abs(V - new_V))
         V = np.copy(new_V)
+        i = i + 1
     return V, Q
