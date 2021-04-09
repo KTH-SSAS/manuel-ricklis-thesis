@@ -1,4 +1,5 @@
 import Helpers.Importer as Importer
+import Graph.GraphGenerator as GraphGenerator
 import numpy as np
 import math
 
@@ -18,13 +19,32 @@ class AttackGraph:
     effort = 10.0
 
     def __init__(self):
-        self.graph = Importer.getExampleGraph()
+        # self.graph = Importer.getExampleGraph()
+        model = GraphGenerator.getModel()
+        self.graph = self.build_transition_matrix_from_instances(model)
         self.ttc_dict = Importer.readTTCSpecifications()
         self.object_dict = Importer.readObjectSpecifications()
         self.rewards, self.success_probabilities = self.build_rewards_and_success_probabilities()
 
+    def build_transition_matrix_from_instances(self, model: dict):
+        graph = {}
+        for instance in model:
+            for _, step in instance.attack_steps.items():
+                s = f'{instance.type}.{instance.name}.{step.name}'
+                graph[s] = []
+                if step.has_children():
+                    if type(step.children) == dict:
+                        for _, child in step.children.items():
+                            graph[s].append(f'{child.instance.type}.{child.instance.name}.{child.name}')
+                    else:
+                        graph[s].append(f'{step.children.instance.type}.'
+                                        f'{step.children.instance.name}.'
+                                        f'{step.children.name}')
+        return graph
+
     def build_rewards_and_success_probabilities(self):
         key_indices = dict(zip(self.graph.keys(), [i for i in range(len(self.graph))]))
+        print(key_indices)
         n = len(key_indices)
         rewards = np.ones((n, n)) * -999
         success_probabilities = np.zeros((n, n))
@@ -33,8 +53,9 @@ class AttackGraph:
         # needed to compromise
         # for distributions, the maximum effort is assumed which gives a success probability that is later regarded
         # in the value iteration
-        for item in self.graph.items():
-            for entry in item[1]:
+        for key, step in self.graph.items():
+            for entry in step:
+                print(entry)
                 reward = self.getReward(entry)
                 distribution = self.getStepDistribution(entry)
                 probability = self.getSuccessProbability(distribution)
@@ -42,8 +63,8 @@ class AttackGraph:
                 if distribution[0] != '':
                     ttc = self.effort
                 v = reward - ttc
-                success_probabilities[key_indices[item[0]], key_indices[entry]] = probability
-                rewards[key_indices[item[0]], key_indices[entry]] = v
+                success_probabilities[key_indices[key], key_indices[entry]] = probability
+                rewards[key_indices[key], key_indices[entry]] = v
         return rewards, success_probabilities
 
     def getStepDistribution(self, step: str) -> []:
@@ -52,7 +73,7 @@ class AttackGraph:
             return ['', 0]
         return self.ttc_dict[assetID][stepName]
 
-    def getReward(self, step: str) -> float:
+    def getReward(self, step) -> float:
         s = step.split(".")
         return self.object_dict[s[0]][s[2]]
 
