@@ -11,7 +11,7 @@ def init():
         if V[i] > 0:
             print(f'{key} - {V[i]}')
         i = i + 1
-    # print(V)
+    print(V)
     # print()
     # print(Q)
     # print(graph.graph.keys())

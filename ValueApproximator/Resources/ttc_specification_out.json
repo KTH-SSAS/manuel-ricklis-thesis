@@ -1,0 +1,353 @@
+{
+  "Object": {
+    "attemptUseVulnerability": "",
+    "deny": "",
+    "bypassAccessControl": ""
+  },
+  "System": {
+    "connect": "",
+    "attemptConnect": "HardAndUncertain",
+    "attemptUsePhysicalVulnerability": "",
+    "allPrivilegeAuthenticate": "",
+    "individualPrivilegeAuthenticate": "",
+    "attemptGainFullAccess": "",
+    "fullAccess": "",
+    "specificAccess": "",
+    "physicalAccess": "",
+    "hardwareModificationsProtection": "",
+    "deny": "",
+    "bypassAccessControl": ""
+  },
+  "SoftwareProduct": {
+    "compromiseApplication": "",
+    "readApplication": "",
+    "modifyApplication": "",
+    "denyApplication": ""
+  },
+  "Application": {
+    "disabled": "Disabled",
+    "localConnect": "",
+    "attemptUseVulnerability": "",
+    "useVulnerability": "",
+    "attemptLocalConnectVuln": "",
+    "attemptNetworkRequestRespondConnectVuln": "",
+    "attemptLocalLowPrivVuln": "",
+    "attemptLocalHighPrivVuln": "",
+    "networkConnect": "",
+    "accessNetworkAndConnections": "",
+    "networkRequestConnect": "",
+    "networkRespondConnect": "VeryHardAndUncertain",
+    "specificAccessFromLocalConnection": "",
+    "specificAccessFromNetworkConnection": "",
+    "specificAccess": "",
+    "attemptLocalConnectVulnOnHost": "HardAndUncertain",
+    "authenticate": "",
+    "specificAccessAuthenticate": "",
+    "localAccess": "",
+    "networkAccess": "",
+    "fullAccess": "",
+    "attemptFullAccessAfterSoftProdVulnerability": "",
+    "attemptReadAfterSoftProdVulnerability": "",
+    "attemptModifyAfterSoftProdVulnerability": "",
+    "attemptDenyAfterSoftProdVulnerability": "",
+    "fullAccessAfterSoftProdVulnerability": "",
+    "readAfterSoftProdVulnerability": "",
+    "modifyAfterSoftProdVulnerability": "",
+    "denyAfterSoftProdVulnerability": "",
+    "attemptApplicationRespondConnectThroughData": "",
+    "codeExecutionAfterVulnerability": "",
+    "read": "",
+    "modify": "",
+    "deny": "",
+    "denyFromConnectionRule": ""
+  },
+  "PhysicalZone": {
+    "gainPhysicalAccess": ""
+  },
+  "Information": {
+    "attemptAccess": ""
+  },
+  "Data": {
+    "attemptAccess": "",
+    "attemptAccessFromIdentity": "",
+    "access": "",
+    "authenticated": "",
+    "accessUnencryptedData": "",
+    "accessDecryptedData": "",
+    "dataNotPresent": "Disabled",
+    "readContainedInformation": "",
+    "attemptApplicationRespondConnect": "",
+    "applicationRespondConnect": "",
+    "attemptRead": "",
+    "identityAttemptRead": "",
+    "identityRead": "",
+    "attemptWrite": "",
+    "identityAttemptWrite": "",
+    "identityWrite": "",
+    "attemptDelete": "",
+    "identityAttemptDelete": "",
+    "identityDelete": "",
+    "read": "",
+    "write": "",
+    "delete": "",
+    "attemptDeny": "",
+    "deny": "",
+    "attemptEavesdrop": "",
+    "attemptManInTheMiddle": "",
+    "eavesdrop": "",
+    "manInTheMiddle": "",
+    "compromiseAppOrigin": ""
+  },
+  "Identity": {
+    "twoFactorAuthentication": "",
+    "disabled": "Disabled",
+    "attemptAssume": "",
+    "successfulAssume": "",
+    "attemptAssumeAfter2FA": "",
+    "successfulAssumeAfter2FA": "",
+    "assume": ""
+  },
+  "Privileges": {
+    "disabled": "Disabled",
+    "attemptAssume": "",
+    "assume": ""
+  },
+  "Group": {
+    "compromiseGroup": ""
+  },
+  "Credentials": {
+    "notDisclosed": "Enabled",
+    "useLeakedCredentials": "EasyAndCertain",
+    "use": "",
+    "attemptAccess": "",
+    "credentialTheft": ""
+  },
+  "User": {
+    "noPasswordReuse": "Enabled",
+    "oneCredentialCompromised": "",
+    "passwordReuseCompromise": "",
+    "attemptSocialEngineering": "",
+    "attemptCredentialTheft": "",
+    "credentialTheft": "HardAndUncertain",
+    "attemptReverseTakeover": "",
+    "reverseTakeover": "VeryHardAndUncertain",
+    "phishUser": "",
+    "attemptSteal2FAtoken": "",
+    "steal2FAtoken": "VeryHardAndUncertain",
+    "compromise": ""
+  },
+  "Network": {
+    "physicalAccess": "",
+    "networkAccessControl": "",
+    "bypassAccessControl": "VeryHardAndUncertain",
+    "attemptAccess": "",
+    "access": "",
+    "successfulAccess": "",
+    "networkForwarding": "",
+    "denialOfService": "",
+    "accessNetworkData": "",
+    "eavesdropDefense": "",
+    "manInTheMiddleDefense": "",
+    "eavesdrop": "",
+    "bypassEavesdropProtection": "HardAndUncertain",
+    "manInTheMiddle": "",
+    "bypassMitMProtection": "HardAndUncertain",
+    "eavesdropAfterPhysicalAccess": ""
+  },
+  "RoutingFirewall": {
+    "denialOfService": "",
+    "fullAccess": ""
+  },
+  "ConnectionRule": {
+    "disabled": "Disabled",
+    "filtered": "Disabled",
+    "attemptAccessNetworks": "",
+    "accessNetworks": "",
+    "attemptConnectToApplications": "",
+    "connectToApplications": "",
+    "attemptTransmitResponse": "",
+    "transmitResponse": "",
+    "attemptTransmit": "",
+    "transmit": "",
+    "attemptDenialOfService": "",
+    "denialOfService": "",
+    "attemptEavesdropOnDataInTransit": "",
+    "eavedropOnDataInTransit": "",
+    "attemptManInTheMiddleOnDataInTransit": "",
+    "mainInTheMiddleOnDataInTransit": ""
+  },
+  "AutomaticallyModeledVulnerability": {},
+  "AutomaticLowComplexityVulnerability": {
+    "abuse": "Exponential(1.0)"
+  },
+  "AutomaticHighComplexityVulnerability": {
+    "abuse": "Exponential(0.01)"
+  },
+  "LLNNVulnerability": {},
+  "LLNRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "LLLNVulnerability": {},
+  "LLLRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "LLHNVulnerability": {},
+  "LLHRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "NLNNVulnerability": {},
+  "NLNRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "NLLNVulnerability": {},
+  "NLLRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "NLHNVulnerability": {},
+  "NLHRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "LHNNVulnerability": {},
+  "LHNRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "LHLNVulnerability": {},
+  "LHLRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "LHHNVulnerability": {},
+  "LHHRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "NHNNVulnerability": {},
+  "NHNRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "NHLNVulnerability": {},
+  "NHLRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "NHHNVulnerability": {},
+  "NHHRVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "AutomaticExploit": {
+    "attemptExploit": "",
+    "denyImpact": "",
+    "readImpact": "",
+    "modifyImpact": ""
+  },
+  "HHHExploit": {
+    "impact": ""
+  },
+  "HHLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "HHNExploit": {
+    "impact": ""
+  },
+  "HLHExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "HLLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "HLNExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "HNHExploit": {
+    "impact": ""
+  },
+  "HNLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "HNNExploit": {
+    "impact": ""
+  },
+  "LHHExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "LHLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "LHNExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "LLHExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "LLLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "LLNExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "LNHExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "LNLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "LNNExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "NHHExploit": {
+    "impact": ""
+  },
+  "NHLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "NHNExploit": {
+    "impact": ""
+  },
+  "NLHExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "NLLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "NLNExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "NNHExploit": {
+    "impact": ""
+  },
+  "NNLExploit": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "ManuallyModeledVulnerability": {
+    "userInteracts": "Bernoulli(0.5)"
+  },
+  "ManualLowImpactVulnerability": {
+    "impact": "",
+    "lowImpact": "Bernoulli(0.5)"
+  },
+  "ManualHighImpactVulnerability": {
+    "impact": ""
+  },
+  "ManualHighComplexityExploit": {
+    "attemptExploit": "Exponential(0.01)"
+  },
+  "ManualLowComplexityExploit": {
+    "attemptExploit": "Exponential(1.0)"
+  }
+}

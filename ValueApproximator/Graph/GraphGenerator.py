@@ -57,7 +57,7 @@ class Instance(object):
         return self.name == other
 
     def load_attack_steps(self):
-        with open('Resources/objectSpecification.json') as f:
+        with open('Resources/objectSpecification_out.json') as f:
             data = json.load(f)
         attack_step_list = data.get(self.type)
         if attack_step_list is not None:

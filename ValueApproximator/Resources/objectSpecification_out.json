@@ -29,9 +29,13 @@
     "attemptUseVulnerability": 0,
     "deny": 0,
     "bypassAccessControl": 0,
+    "disabled": 0,
     "localConnect": 0,
+    "useVulnerability": 0,
     "attemptLocalConnectVuln": 0,
     "attemptNetworkRequestRespondConnectVuln": 0,
+    "attemptLocalLowPrivVuln": 0,
+    "attemptLocalHighPrivVuln": 0,
     "networkConnect": 0,
     "accessNetworkAndConnections": 0,
     "networkRequestConnect": 0,
@@ -73,7 +77,7 @@
     "accessUnencryptedData": 0,
     "accessDecryptedData": 0,
     "dataNotPresent": 0,
-    "readContainedInformationAndData": 0,
+    "readContainedInformation": 0,
     "attemptApplicationRespondConnect": 0,
     "applicationRespondConnect": 0,
     "attemptRead": 0,
@@ -85,11 +89,11 @@
     "attemptDelete": 0,
     "identityAttemptDelete": 0,
     "identityDelete": 0,
-    "read": 500,
+    "read": 200,
     "write": 0,
     "delete": 0,
     "attemptDeny": 0,
-    "deny": 200,
+    "deny": 0,
     "attemptEavesdrop": 0,
     "attemptManInTheMiddle": 0,
     "eavesdrop": 0,
@@ -98,8 +102,16 @@
   },
   "Identity": {
     "twoFactorAuthentication": 0,
+    "disabled": 0,
     "attemptAssume": 0,
     "successfulAssume": 0,
+    "attemptAssumeAfter2FA": 0,
+    "successfulAssumeAfter2FA": 0,
+    "assume": 0
+  },
+  "Privileges": {
+    "disabled": 0,
+    "attemptAssume": 0,
     "assume": 0
   },
   "Group": {
@@ -148,9 +160,13 @@
     "attemptUseVulnerability": 0,
     "deny": 0,
     "bypassAccessControl": 0,
+    "disabled": 0,
     "localConnect": 0,
+    "useVulnerability": 0,
     "attemptLocalConnectVuln": 0,
     "attemptNetworkRequestRespondConnectVuln": 0,
+    "attemptLocalLowPrivVuln": 0,
+    "attemptLocalHighPrivVuln": 0,
     "networkConnect": 0,
     "accessNetworkAndConnections": 0,
     "networkRequestConnect": 0,
@@ -181,6 +197,7 @@
   },
   "ConnectionRule": {
     "disabled": 0,
+    "filtered": 0,
     "attemptAccessNetworks": 0,
     "accessNetworks": 0,
     "attemptConnectToApplications": 0,
@@ -195,24 +212,6 @@
     "eavedropOnDataInTransit": 0,
     "attemptManInTheMiddleOnDataInTransit": 0,
     "mainInTheMiddleOnDataInTransit": 0
-  },
-  "ManuallyModeledVulnerability": {
-    "userInteracts": 0
-  },
-  "ManualLowImpactVulnerability": {
-    "userInteracts": 0,
-    "impact": 0,
-    "lowImpact": 0
-  },
-  "ManualHighImpactVulnerability": {
-    "userInteracts": 0,
-    "impact": 0
-  },
-  "ManualHighComplexityExploit": {
-    "attemptExploit": 0
-  },
-  "ManualLowComplexityExploit": {
-    "attemptExploit": 0
   },
   "AutomaticallyModeledVulnerability": {},
   "AutomaticLowComplexityVulnerability": {
@@ -511,5 +510,23 @@
     "modifyImpact": 0,
     "impact": 0,
     "lowImpact": 0
+  },
+  "ManuallyModeledVulnerability": {
+    "userInteracts": 0
+  },
+  "ManualLowImpactVulnerability": {
+    "userInteracts": 0,
+    "impact": 0,
+    "lowImpact": 0
+  },
+  "ManualHighImpactVulnerability": {
+    "userInteracts": 0,
+    "impact": 0
+  },
+  "ManualHighComplexityExploit": {
+    "attemptExploit": 0
+  },
+  "ManualLowComplexityExploit": {
+    "attemptExploit": 0
   }
 }
