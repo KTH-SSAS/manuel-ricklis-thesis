@@ -44,7 +44,6 @@ class AttackGraph:
 
     def build_rewards_and_success_probabilities(self):
         key_indices = dict(zip(self.graph.keys(), [i for i in range(len(self.graph))]))
-        print(key_indices)
         n = len(key_indices)
         rewards = np.ones((n, n)) * -999
         success_probabilities = np.zeros((n, n))
@@ -54,8 +53,11 @@ class AttackGraph:
         # for distributions, the maximum effort is assumed which gives a success probability that is later regarded
         # in the value iteration
         for key, step in self.graph.items():
+            if len(step) == 0:
+                # print(f'{self.getReward(key)} {key}')
+                success_probabilities[key_indices[key], key_indices[key]] = 1.0
+                rewards[key_indices[key], key_indices[key]] = self.getReward(key) * 0.00001
             for entry in step:
-                print(entry)
                 reward = self.getReward(entry)
                 distribution = self.getStepDistribution(entry)
                 probability = self.getSuccessProbability(distribution)
@@ -74,8 +76,8 @@ class AttackGraph:
         return self.ttc_dict[assetID][stepName]
 
     def getReward(self, step) -> float:
-        s = step.split(".")
-        return self.object_dict[s[0]][s[2]]
+        (assetID, assetName, stepName) = step.split(".")
+        return self.object_dict[assetID][stepName]
 
     def getSuccessProbability(self, distr: []) -> float:
         distribution = distr[0]

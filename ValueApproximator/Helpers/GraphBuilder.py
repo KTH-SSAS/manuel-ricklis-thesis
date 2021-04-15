@@ -6,9 +6,15 @@ graph = Graph()
 def init():
     np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
     V, Q = value_iteration(graph.rewards)
-    print(V)
-    print()
-    print(Q)
+    i = 0
+    for key in graph.graph.keys():
+        if V[i] > 0:
+            print(f'{key} - {V[i]}')
+        i = i + 1
+    # print(V)
+    # print()
+    # print(Q)
+    # print(graph.graph.keys())
 
 
 def value_iteration(m, gamma=0.9, tolerance=1e-3):
