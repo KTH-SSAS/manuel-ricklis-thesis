@@ -90,7 +90,7 @@
     "identityAttemptDelete": 0,
     "identityDelete": 0,
     "read": 200,
-    "write": 0,
+    "write": 300,
     "delete": 0,
     "attemptDeny": 0,
     "deny": 0,

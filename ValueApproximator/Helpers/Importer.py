@@ -4,6 +4,9 @@ from typing import Dict, List
 
 
 def readObjectSpecifications(from_mal=False) -> [dict, dict]:
+    """
+    Reads the relevant MAL files and builds a dictionary with each step as well as one with distributions assigned to steps
+    """
     ttc_dict = {}
     objects_dict = {}
 
