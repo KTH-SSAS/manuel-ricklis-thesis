@@ -1,9 +1,8 @@
-import Helpers.Importer as Importer
-import Graph.GraphGenerator as GraphGenerator
+import ValueApproximator.Helpers.Importer as Importer
+import Generator.modelGenerator as ModelGenerator
 import numpy as np
 import math
-import regex as re
-import json
+import re
 
 
 class AttackGraph:
@@ -26,7 +25,7 @@ class AttackGraph:
     def __init__(self):
         self.graph = {}
         self.model = {}
-        self.concatenate_model_instances(GraphGenerator.getModel())
+        self.concatenate_model_instances(ModelGenerator.getModel())
         self.build_graph("Network.Network2.successfulAccess")
         self.object_dict, self.ttc_dict = Importer.readObjectSpecifications(False)
         self.rewards, self.success_probabilities = self.build_rewards_and_success_probabilities()

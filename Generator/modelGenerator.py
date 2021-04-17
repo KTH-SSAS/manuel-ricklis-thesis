@@ -1,6 +1,7 @@
 import json
 import inspect
-from statistics import NormalDist
+import statistics
+
 
 class Instance(object):
     def __init__(self, inst_type, inst_name):
@@ -57,7 +58,7 @@ class Instance(object):
         return self.name == other
 
     def load_attack_steps(self):
-        with open('../ValueApproximator/Resources/objectSpecification.json') as f:
+        with open('ValueApproximator/Resources/objectSpecification_out.json') as f:
             data = json.load(f)
         attack_step_list = data.get(self.type)
         if attack_step_list is not None:
@@ -72,12 +73,12 @@ class Instance(object):
             if attack.has_children():
                 parent_attack_step = self.attack_steps[attack.name]
                 conn_attack_steps[parent_attack_step.name] = attack.children
-        # print(conn_attack_steps)
         return conn_attack_steps
 
 
 class AttackStep(object):
-    def __init__(self, name, reward_distribution, attack_step_type="OR", ttc_distribution=None, children=None, instance=None):
+    def __init__(self, name, reward_distribution, attack_step_type="OR", ttc_distribution=None, children=None,
+                 instance=None):
         self.name = name
         self.instance = instance
         self.ttc_distribution = ttc_distribution
@@ -101,11 +102,11 @@ class ModelGenerator(object):
     def generate_model_based_on_random_parameters(self, networks_mean, networks_sd, services_mean,
                                                   services_sd, data_mean, data_sd, id_data_mean,
                                                   id_data_sd, servce_id_mean, service_id_sd):
-        number_of_networks = int(NormalDist(mu=networks_mean, sigma=networks_sd).inv_cdf(0.95))
-        number_of_services = int(NormalDist(mu=services_mean, sigma=services_sd).inv_cdf(0.95))
-        number_of_data_per_service = int(NormalDist(mu=data_mean, sigma=data_sd).inv_cdf(0.95))
-        number_of_data_per_identity = int(NormalDist(mu=id_data_mean, sigma=id_data_sd).inv_cdf(0.95))
-        number_of_identities_per_service = int(NormalDist(mu=servce_id_mean, sigma=service_id_sd).inv_cdf(0.95))
+        number_of_networks = int(statistics.NormalDist(mu=networks_mean, sigma=networks_sd).inv_cdf(0.95))
+        number_of_services = int(statistics.NormalDist(mu=services_mean, sigma=services_sd).inv_cdf(0.95))
+        number_of_data_per_service = int(statistics.NormalDist(mu=data_mean, sigma=data_sd).inv_cdf(0.95))
+        number_of_data_per_identity = int(statistics.NormalDist(mu=id_data_mean, sigma=id_data_sd).inv_cdf(0.95))
+        number_of_identities_per_service = int(statistics.NormalDist(mu=servce_id_mean, sigma=service_id_sd).inv_cdf(0.95))
 
     def generate_model(self, number_of_networks=2, number_of_services=5, number_of_data_per_service=2,
                        number_of_data_per_identity=2, number_of_identities_per_service=3):
@@ -150,8 +151,6 @@ class ModelGenerator(object):
                         data2 = Instance("Data", "IdData" + str(data))
                         self.model.append(data2)
                         self.add_writePrivileges(identity, data2)
-
-        # print(instance1.get_connected_attack_steps())
 
         print("Finished.")
         return self.model
@@ -297,15 +296,4 @@ class ModelGenerator(object):
 def getModel():
     model_generator = ModelGenerator()
     model = model_generator.generate_model()
-    # g = {}
-    # for instance in model:
-    #     g = {**instance.get_connected_attack_steps(), **g}
-    #     print("# Instance: " + str(instance))
-    #     print(instance.get_connected_attack_steps())
     return model
-
-# # One dictionary of attack step connections for each asset instance (if those dicts are concatenated, then the full graph is produced!)
-# for instance in model:
-#     print("# Instance: " + str(instance))
-#     print(instance.get_connected_attack_steps())
-model = getModel()

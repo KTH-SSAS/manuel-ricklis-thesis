@@ -1,4 +1,4 @@
-from Graph.AttackGraph import AttackGraph as Graph
+from ValueApproximator.Graph.AttackGraph import AttackGraph as Graph
 import numpy as np
 
 graph = Graph()
