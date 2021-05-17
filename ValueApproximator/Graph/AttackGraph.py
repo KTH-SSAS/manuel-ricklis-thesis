@@ -9,7 +9,7 @@ class AttackGraph:
     # all attack steps in the system with their respective children
     model: dict
 
-    # relevant (to the entry point(s)) attack steps with their respective children
+    # attack steps with their respective children
     graph: dict
 
     # time to compromise distributions
@@ -18,52 +18,45 @@ class AttackGraph:
     # mal specification of assets and their steps
     object_dict: dict
 
+    # mapping from attack steps to an index
+    key_indices: dict
+
     rewards: np.ndarray
     success_probabilities: np.ndarray
     effort = 10.0
 
     def __init__(self):
         self.graph = {}
-        self.model = {}
         self.concatenate_model_instances(ModelGenerator.getModel())
-        self.build_graph("Network.Network2.successfulAccess")
         self.object_dict, self.ttc_dict = Importer.readObjectSpecifications(False)
         self.rewards, self.success_probabilities = self.build_rewards_and_success_probabilities()
-
-
-    def build_graph(self, step: str):
-        """
-        Recursively builds up an attack graph from a specific attack step
-        """
-        self.graph[step] = self.model[step]
-        for child in self.model[step]:
-            self.build_graph(child)
 
     def concatenate_model_instances(self, model: dict):
         """
         Concatenates all steps of all instances in the generated model to one dictionary
         """
+        i = 0
         for instance in model:
             for _, step in instance.attack_steps.items():
                 s = f'{instance.type}.{instance.name}.{step.name}'
-                self.model[s] = []
+                self.graph[s] = []
                 if step.has_children():
                     if type(step.children) == dict:
                         for _, child in step.children.items():
-                            self.model[s].append(f'{child.instance.type}.'
+                            self.graph[s].append(f'{child.instance.type}.'
                                                  f'{child.instance.name}.'
                                                  f'{child.name}')
                     else:
-                        self.model[s].append(f'{step.children.instance.type}.'
+                        self.graph[s].append(f'{step.children.instance.type}.'
                                              f'{step.children.instance.name}.'
                                              f'{step.children.name}')
+        self.key_indices = dict(zip(self.graph.keys(), [i for i in range(len(self.graph))]))
 
     def build_rewards_and_success_probabilities(self):
         """
         Builds a rewards and success probability matrix, each entry corresponding to a transition from step i to j
         """
-        key_indices = dict(zip(self.graph.keys(), [i for i in range(len(self.graph))]))
-        n = len(key_indices)
+        n = len(self.key_indices)
         rewards = np.ones((n, n)) * -999
         success_probabilities = np.zeros((n, n))
 
@@ -72,10 +65,10 @@ class AttackGraph:
         # for distributions, the maximum effort is assumed which gives a success probability that is later regarded
         # in the value iteration
         for key, steps in self.graph.items():
-            if len(steps) == 0:
-                # print(f'{self.getReward(key)} {key}')
-                success_probabilities[key_indices[key], key_indices[key]] = 1.0
-                rewards[key_indices[key], key_indices[key]] = self.get_reward(key) * 0.00001
+            # if len(steps) == 0:
+            #     # print(f'{self.getReward(key)} {key}')
+            #     success_probabilities[key_indices[key], key_indices[key]] = 1.0
+            #     rewards[key_indices[key], key_indices[key]] = self.get_reward(key) * 0.00001
             for entry in steps:
                 reward = self.get_reward(entry)
                 distribution = self.parse_distribution(entry)
@@ -84,8 +77,9 @@ class AttackGraph:
                 if distribution != '':
                     ttc = self.effort
                 v = reward - ttc
-                success_probabilities[key_indices[key], key_indices[entry]] = probability
-                rewards[key_indices[key], key_indices[entry]] = v
+                success_probabilities[self.key_indices[key], self.key_indices[entry]] = probability
+                rewards[self.key_indices[key], self.key_indices[entry]] = v
+
         return rewards, success_probabilities
 
     def get_reward(self, step) -> float:

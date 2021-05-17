@@ -1,23 +1,26 @@
 from ValueApproximator.Graph.AttackGraph import AttackGraph as Graph
+from ValueApproximator.Helpers.Exporter import Exporter
 import numpy as np
-
-graph = Graph()
 
 def init():
     np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
+    graph = Graph()
+    exporter = Exporter()
     V, Q = value_iteration(graph.rewards)
     i = 0
     for key in graph.graph.keys():
         if V[i] > 0:
-            print(f'{key} - {V[i]}')
+            print(f'{graph.key_indices[key]}   {key} - {V[i]}')
         i = i + 1
-    print(V)
+    # print(V)
     # print()
     # print(Q)
     # print(graph.graph.keys())
 
+    exporter.parse_features(graph, 5)
 
-def value_iteration(m, gamma=0.9, tolerance=1e-3):
+
+def value_iteration(graph, m, gamma=0.9, tolerance=1e-3):
     n = m.shape[0]
     V = np.zeros(n)
     Q = np.zeros((n, n))
