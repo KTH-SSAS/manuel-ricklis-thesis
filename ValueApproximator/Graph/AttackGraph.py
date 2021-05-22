@@ -65,6 +65,8 @@ class AttackGraph:
         # for distributions, the maximum effort is assumed which gives a success probability that is later regarded
         # in the value iteration
         for key, steps in self.graph.items():
+            # add self edge with small reward to nodes without children in order to include them in the value iteration
+            # (for visualization purposes only)
             # if len(steps) == 0:
             #     # print(f'{self.getReward(key)} {key}')
             #     success_probabilities[key_indices[key], key_indices[key]] = 1.0

@@ -44,21 +44,16 @@ def readObjectSpecifications(from_mal=False) -> [dict, dict]:
                         if assetMatch.group(3):
                             if assetMatch.group(3) not in ["Vulnerability", "Exploit"]:
                                 objects_dict[activeAsset] = objects_dict[assetMatch.group(3)].copy()
-        file.close()
 
         with open("ValueApproximator/Resources/objectSpecification_out.json", "w") as f:
             json.dump(objects_dict, f)
-            f.close()
         with open("ValueApproximator/Resources/ttc_specification_out.json", "w") as f:
             json.dump(ttc_dict, f)
-            f.close()
     else:
         with open("ValueApproximator/Resources/objectSpecification_out.json", "r") as f:
             objects_dict = json.load(f)
-            f.close()
         with open("ValueApproximator/Resources/ttc_specification_out.json", "r") as f:
             ttc_dict = json.load(f)
-            f.close()
     return [objects_dict, ttc_dict]
 
 
