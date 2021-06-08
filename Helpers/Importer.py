@@ -1,6 +1,21 @@
 import json
 import re
-from typing import Dict, List
+
+
+def get_vocabularies():
+    """
+    Reads the vocabularies for attack step names, asset types and asset names
+    Each entry is assigned an integer value
+    """
+    # load integer mappings
+    with open("ValueApproximator/Resources/vocabularies.json", "r") as f:
+        input_vocab = json.load(f)
+    # build a vocabulary for each feature that will use embeddings
+    vocabularies = {}
+    for key in input_vocab.keys():
+        vocabularies[key] = {k: i for i, k in enumerate(input_vocab[key])}
+
+    return vocabularies
 
 
 def readObjectSpecifications(from_mal=False) -> [dict, dict]:
@@ -55,23 +70,3 @@ def readObjectSpecifications(from_mal=False) -> [dict, dict]:
         with open("ValueApproximator/Resources/ttc_specification_out.json", "r") as f:
             ttc_dict = json.load(f)
     return [objects_dict, ttc_dict]
-
-
-def getExampleGraph():
-    graph_dict: Dict[str, List[str]] = {
-        "Identity.Identity.attemptAssume": ["Identity.Identity.successfulAssume"],
-        "Identity.Identity.successfulAssume": ["System.System.fullAccess"],
-        "System.System.fullAccess": ["Network.LAN1.successfulAccess", "Network.LAN2.successfulAccess"],
-        "Network.LAN1.successfulAccess": ["AutomaticLowComplexityVulnerability.AppVulnerability.abuse"],
-        "Network.LAN2.successfulAccess": ["AutomaticHighComplexityVulnerability.AppVulnerability.abuse"],
-        "AutomaticLowComplexityVulnerability.AppVulnerability.abuse": [
-            "Application.App.denyAfterSoftProdVulnerability"],
-        "AutomaticHighComplexityVulnerability.AppVulnerability.abuse": [
-            "Application.App.readAfterSoftProdVulnerability"],
-        "Application.App.denyAfterSoftProdVulnerability": ["Data.Data.deny"],
-        "Application.App.readAfterSoftProdVulnerability": ["Data.Data.read"],
-        "Data.Data.deny": [],
-        "Data.Data.read": []
-    }
-
-    return graph_dict

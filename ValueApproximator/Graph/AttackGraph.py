@@ -1,8 +1,11 @@
-import ValueApproximator.Helpers.Importer as Importer
+import Helpers.Importer as Importer
 import Generator.modelGenerator as ModelGenerator
 import numpy as np
 import math
 import re
+from scipy.stats import expon
+from scipy.stats import bernoulli
+from random import random
 
 
 class AttackGraph:
@@ -21,15 +24,14 @@ class AttackGraph:
     # mapping from attack steps to an index
     key_indices: dict
 
+    # effective reward (immediate reward - ttc) for all transitions
     rewards: np.ndarray
-    success_probabilities: np.ndarray
-    effort = 10.0
 
     def __init__(self):
         self.graph = {}
         self.concatenate_model_instances(ModelGenerator.getModel())
         self.object_dict, self.ttc_dict = Importer.readObjectSpecifications(False)
-        self.rewards, self.success_probabilities = self.build_rewards_and_success_probabilities()
+        self.rewards = self.build_rewards()
 
     def concatenate_model_instances(self, model: dict):
         """
@@ -52,37 +54,36 @@ class AttackGraph:
                                              f'{step.children.name}')
         self.key_indices = dict(zip(self.graph.keys(), [i for i in range(len(self.graph))]))
 
-    def build_rewards_and_success_probabilities(self):
+    def build_rewards(self):
         """
-        Builds a rewards and success probability matrix, each entry corresponding to a transition from step i to j
+        Builds a reward matrix, each entry corresponding to a transition from step i to j
         """
         n = len(self.key_indices)
         rewards = np.ones((n, n)) * -999
-        success_probabilities = np.zeros((n, n))
 
-        # for every item in the graph, their reward is calculated with the reward of reaching the step and the time
-        # needed to compromise
-        # for distributions, the maximum effort is assumed which gives a success probability that is later regarded
-        # in the value iteration
         for key, steps in self.graph.items():
-            # add self edge with small reward to nodes without children in order to include them in the value iteration
-            # (for visualization purposes only)
-            # if len(steps) == 0:
-            #     # print(f'{self.getReward(key)} {key}')
-            #     success_probabilities[key_indices[key], key_indices[key]] = 1.0
-            #     rewards[key_indices[key], key_indices[key]] = self.get_reward(key) * 0.00001
             for entry in steps:
                 reward = self.get_reward(entry)
-                distribution = self.parse_distribution(entry)
-                probability = self.get_success_probability(distribution)
-                ttc = 1.0
-                if distribution != '':
-                    ttc = self.effort
+                ttc = self.parse_distribution(entry)
+                ttc = 1.0 if ttc == 0 else ttc
                 v = reward - ttc
-                success_probabilities[self.key_indices[key], self.key_indices[entry]] = probability
                 rewards[self.key_indices[key], self.key_indices[entry]] = v
 
-        return rewards, success_probabilities
+        return rewards
+
+    def value_iteration(self, gamma=0.9, tolerance=1e-3):
+        n = self.rewards.shape[0]
+        V = np.zeros(n)
+        Q = np.zeros((n, n))
+        error = tolerance + 1
+        i = 0
+        while error > tolerance:
+            Q = (self.rewards + gamma * V)
+            new_V = np.max(Q, axis=1)
+            error = np.max(np.abs(V - new_V))
+            V = np.copy(new_V)
+            i = i + 1
+        return V, Q
 
     def get_reward(self, step) -> float:
         (assetID, assetName, stepName) = step.split(".")
@@ -112,7 +113,7 @@ class AttackGraph:
         """
         distribution = self.get_step_distribution(entry)
         if distribution == "":
-            return ["", 0.0]
+            return 0
         ordinal_match = re.match("^.*(?!\d+).*$", distribution)
         distribution_name: str
         distribution_parameter: float
@@ -120,7 +121,17 @@ class AttackGraph:
             return self.parse_ordinal(distribution)
         else:
             distribution_match = re.match("^(\w+)\((.+)\)$", distribution)
-            return [distribution_match.group(1), distribution_match.group(2)]
+            return self.get_ttc([distribution_match.group(1), distribution_match.group(2)])
+
+    def get_ttc(self, distribution):
+        '''
+        Samples from the given distribution
+        '''
+        distr, value = distribution
+        if distr.lower() == "bernoulli":
+            return bernoulli.ppf(q=value, p=random())
+        else:
+            return expon.ppf(q=0.95, scale=1 / value)
 
     def parse_ordinal(self, distribution: str):
         """
@@ -128,20 +139,18 @@ class AttackGraph:
         https://github.com/mal-lang/malcompiler/wiki/Supported-distribution-functions
         """
         if distribution == "EasyAndCertain":
-            return ["Exponential", 1.0]
+            return expon.ppf(q=0.95, scale=1)
         elif distribution == "EasyAndUncertian":
-            return ["Bernouilli", 0.5]
+            return bernoulli.ppf(q=0.5, p=random())
         elif distribution == "HardAndCertain":
-            return ["Exponential", 0.1]
+            return expon.ppf(q=0.95, scale=1 / 0.1)
         elif distribution == "HardAndUncertain":
-            success_probability_exponential = self.get_success_probability(["Exponential", 0.1])
-            return ["Bernouilli", 0.5 * success_probability_exponential]
+            return math.inf if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95, scale=1 / 0.1)
         elif distribution == "VeryHardAndCertain":
-            return ["Exponential", 0.01]
+            return expon.ppf(q=0.95, scale=1 / 0.01)
         elif distribution == "VeryHardAndUncertain":
-            success_probability_exponential = self.get_success_probability(["Exponential", 0.01])
-            return ["Bernouilli", 0.5 * success_probability_exponential]
+            return math.inf if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95, scale=1 / 0.01)
         elif distribution == "Enabled":
-            return ["Bernouilli", 1.0]
+            return 0
         elif distribution == "Disabled":
-            return ["Bernouilli", 0.0]
+            return math.inf
