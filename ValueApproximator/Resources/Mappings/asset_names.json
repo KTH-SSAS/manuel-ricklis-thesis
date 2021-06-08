@@ -1,12 +1,14 @@
 {
-  "Network": 0,
-  "Service": 1,
-  "Vulnerability": 2,
-  "Data": 3,
-  "AdminId": 4,
-  "Executor": 5,
-  "HighPrivIdSrvcService": 6,
-  "LowPrivIdSrvcService": 7,
-  "IdData": 8,
-  "IdDataIdData": 9
+  "asset_names": [
+    "Network",
+    "Service",
+    "Vulnerability",
+    "Data",
+    "AdminId",
+    "Executor",
+    "HighPrivIdSrvcService",
+    "LowPrivIdSrvcService",
+    "IdData",
+    "IdDataIdData"
+  ]
 }

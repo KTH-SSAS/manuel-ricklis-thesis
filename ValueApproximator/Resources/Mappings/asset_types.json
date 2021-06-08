@@ -1,7 +1,1 @@
-{
-  "Network": 0,
-  "Application": 1,
-  "ManualHighImpactVulnerability": 2,
-  "Data": 3,
-  "Identity": 4
-}
+{"asset_types": ["Network", "Application", "ManualHighImpactVulnerability", "Data", "Identity"]}
