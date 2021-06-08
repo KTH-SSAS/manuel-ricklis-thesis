@@ -1,0 +1,25 @@
+{
+  "edges": {
+    "arrows": {
+      "to": {
+        "enabled": true,
+        "scaleFactor": 0.8
+      }
+    },
+    "color": {
+      "inherit": true
+    },
+    "smooth": false
+  },
+  "physics": {
+    "barnesHut": {
+      "gravitationalConstant": -30000,
+      "centralGravity": 0,
+      "springLength": 250,
+      "springConstant": 0.3,
+      "damping": 0.85,
+      "avoidOverlap": 1
+    },
+    "minVelocity": 0.75
+  }
+}
