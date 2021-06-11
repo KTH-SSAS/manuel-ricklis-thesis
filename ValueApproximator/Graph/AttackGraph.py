@@ -27,22 +27,112 @@ class AttackGraph:
     # effective reward (immediate reward - ttc) for all transitions
     rewards: np.ndarray
 
+    test_graph = {
+        'A': ['B', 'C'],
+        'B': ['D'],
+        'C': ['D'],
+        'D': []
+    }
+
     def __init__(self):
         self.graph = {}
+        self.graph_expanded = {}
         self.concatenate_model_instances(ModelGenerator.getModel())
         self.object_dict, self.ttc_dict = Importer.readObjectSpecifications(False)
+
+        # determine all entry points from which the graph will be expanded
+        children = []
+        for _, items in self.graph.items():
+            for item in items:
+                if item not in children:
+                    children.append(item)
+        eps = []
+        for key in self.graph:
+            if key not in children:
+                eps.append(key)
+
+        self.graph_and_parents = {}
+        self.build_and_parents()
+        self.expand_graph(eps)
+
+        # TODO: build rewards for expanded graph....most likely best to build alongside the expansion, since it's known
+        #       which transition is subject
         self.rewards = self.build_rewards()
+
+    graph_expanded: dict
+    graph_and_parents: dict
+    and_steps: list
+
+    def expand_graph(self, current_nodes_to_expand):
+        """
+        Expands the graph to intermediate steps in order to reflect AND steps with only OR steps
+
+        Algo:
+          * Initiate recursive method expand_graph with entry points as list
+          * For each entry point, loop through their children
+          * If the child is not in the nodes name (i.e. already reached)
+           and the resulting node (node name | child) is not in the expanded graph
+           add the successor (node name | child)
+
+           AND: if the child is an AND step, check if all it's parents are in the nodes name and only add it if true
+
+          * Call the method again for each list of children added
+        """
+
+        for node in current_nodes_to_expand:
+            if node in self.graph_expanded.keys():
+                continue
+            self.graph_expanded[node] = []
+            for sub_node in node.split("|"):
+                for child in self.graph[sub_node]:
+                    if child not in node and self.sort(node, child) not in self.graph_expanded[node]:
+                        if child in self.graph_and_parents:
+                            condition_fulfilled = True
+                            for parent in self.graph_and_parents[child]:
+                                condition_fulfilled = condition_fulfilled and parent in node
+                            if condition_fulfilled:
+                                self.graph_expanded[node].append(self.sort(node, child))
+                        else:
+                            self.graph_expanded[node].append(self.sort(node, child))
+                self.expand_graph(self.graph_expanded[node])
+
+    def sort(self, node: str, child: str):
+        nodes = node.split("|")
+        nodes.append(child)
+        nodes.sort()
+        return '|'.join(nodes)
+
+    def build_and_parents(self):
+        for instance in self.model:
+            for _, step in instance.attack_steps.items():
+                if step.type != 'AND':
+                    continue
+                s = f'{instance.type}.{instance.name}.{step.name}'
+                if step.has_children():
+                    if type(step.children) == dict:
+                        for _, child in step.children.items():
+                            ss = f'{child.instance.type}.{child.instance.name}.{child.name}'
+                            if ss not in self.graph_and_parents:
+                                self.graph_and_parents[ss] = [s]
+                            elif s not in self.graph_and_parents[ss]:
+                                self.graph_and_parents[ss].append(s)
+                    else:
+                        ss = f'{step.children.instance.type}.{step.children.instance.name}.{step.children.name}'
+                        if ss not in self.graph_and_parents:
+                            self.graph_and_parents[ss] = [s]
+                        else:
+                            self.graph_and_parents[ss].append(s)
 
     def concatenate_model_instances(self, model: dict):
         """
         Concatenates all steps of all instances in the generated model to one dictionary
         """
-        i = 0
+        self.model = model
         for instance in model:
             for _, step in instance.attack_steps.items():
                 s = f'{instance.type}.{instance.name}.{step.name}'
-                self.graph[s] = []
                 if step.has_children():
+                    self.graph[s] = []
                     if type(step.children) == dict:
                         for _, child in step.children.items():
                             self.graph[s].append(f'{child.instance.type}.'
@@ -52,6 +142,12 @@ class AttackGraph:
                         self.graph[s].append(f'{step.children.instance.type}.'
                                              f'{step.children.instance.name}.'
                                              f'{step.children.name}')
+        graph_tmp = {}
+        for _, items in self.graph.items():
+            for item in items:
+                if item not in self.graph.keys():
+                    graph_tmp[item] = []
+        self.graph.update(graph_tmp)
         self.key_indices = dict(zip(self.graph.keys(), [i for i in range(len(self.graph))]))
 
     def build_rewards(self):
