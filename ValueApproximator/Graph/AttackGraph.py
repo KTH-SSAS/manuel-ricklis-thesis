@@ -55,9 +55,6 @@ class AttackGraph:
         self.build_and_parents()
         self.expand_graph(eps)
         self.key_indices = dict(zip(self.graph_expanded.keys(), [i for i in range(len(self.graph_expanded))]))
-
-        # TODO: build rewards for expanded graph....most likely best to build alongside the expansion, since it's known
-        #       which transition is subject
         self.rewards = self.build_rewards()
 
     graph_expanded: dict

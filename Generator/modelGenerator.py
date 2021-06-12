@@ -19,6 +19,11 @@ class Instance(object):
             self.attack_steps["bypassAccessControl"].children = self.attack_steps["fullAccess"]
 
         elif self.type == "Application":
+            # add arbitrary parent to two related steps to create a common entry point
+            self.attack_steps["networkRespondConnect"].children["networkConnect"] = self.attack_steps["networkConnect"]
+            self.attack_steps["networkRespondConnect"].children["networkRequestConnect"] = self.attack_steps[
+                "networkRequestConnect"]
+
             self.attack_steps["localAccess"].type = "AND"
             self.attack_steps["networkAccess"].type = "AND"
             self.attack_steps["authenticate"].children["localAccess"] = self.attack_steps["localAccess"]
