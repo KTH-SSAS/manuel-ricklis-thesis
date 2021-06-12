@@ -54,6 +54,7 @@ class AttackGraph:
         self.graph_and_parents = {}
         self.build_and_parents()
         self.expand_graph(eps)
+        self.key_indices = dict(zip(self.graph_expanded.keys(), [i for i in range(len(self.graph_expanded))]))
 
         # TODO: build rewards for expanded graph....most likely best to build alongside the expansion, since it's known
         #       which transition is subject
@@ -105,18 +106,20 @@ class AttackGraph:
     def build_and_parents(self):
         for instance in self.model:
             for _, step in instance.attack_steps.items():
-                if step.type != 'AND':
-                    continue
                 s = f'{instance.type}.{instance.name}.{step.name}'
                 if step.has_children():
                     if type(step.children) == dict:
                         for _, child in step.children.items():
+                            if child.type != 'AND':
+                                continue
                             ss = f'{child.instance.type}.{child.instance.name}.{child.name}'
                             if ss not in self.graph_and_parents:
                                 self.graph_and_parents[ss] = [s]
                             elif s not in self.graph_and_parents[ss]:
                                 self.graph_and_parents[ss].append(s)
                     else:
+                        if step.children.type != 'AND':
+                            continue
                         ss = f'{step.children.instance.type}.{step.children.instance.name}.{step.children.name}'
                         if ss not in self.graph_and_parents:
                             self.graph_and_parents[ss] = [s]
@@ -148,7 +151,6 @@ class AttackGraph:
                 if item not in self.graph.keys():
                     graph_tmp[item] = []
         self.graph.update(graph_tmp)
-        self.key_indices = dict(zip(self.graph.keys(), [i for i in range(len(self.graph))]))
 
     def build_rewards(self):
         """
@@ -157,15 +159,21 @@ class AttackGraph:
         n = len(self.key_indices)
         rewards = np.ones((n, n)) * -999
 
-        for key, steps in self.graph.items():
-            for entry in steps:
+        for key, steps in self.graph_expanded.items():
+            for entry_expanded in steps:
+                entry = self.get_entry(key, entry_expanded)
                 reward = self.get_reward(entry)
                 ttc = self.parse_distribution(entry)
                 ttc = 1.0 if ttc == 0 else ttc
                 v = reward - ttc
-                rewards[self.key_indices[key], self.key_indices[entry]] = v
+                rewards[self.key_indices[key], self.key_indices[entry_expanded]] = v
 
         return rewards
+
+    def get_entry(self, parent, child):
+        for c in child.split("|"):
+            if c not in parent:
+                return c
 
     def value_iteration(self, gamma=0.9, tolerance=1e-3):
         n = self.rewards.shape[0]
