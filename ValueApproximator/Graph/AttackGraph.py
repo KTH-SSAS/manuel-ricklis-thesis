@@ -27,13 +27,6 @@ class AttackGraph:
     # effective reward (immediate reward - ttc) for all transitions
     rewards: np.ndarray
 
-    test_graph = {
-        'A': ['B', 'C'],
-        'B': ['D'],
-        'C': ['D'],
-        'D': []
-    }
-
     def __init__(self):
         self.graph = {}
         self.graph_expanded = {}
@@ -41,15 +34,11 @@ class AttackGraph:
         self.object_dict, self.ttc_dict = Importer.readObjectSpecifications(False)
 
         # determine all entry points from which the graph will be expanded
-        children = []
-        for _, items in self.graph.items():
-            for item in items:
-                if item not in children:
-                    children.append(item)
-        eps = []
-        for key in self.graph:
-            if key not in children:
-                eps.append(key)
+        children = [item for items in self.graph.values() for item in items]
+        children = np.unique(children)
+
+        # determine entry points from which the graph expansion takes place
+        eps = [key for key in self.graph if key not in children]
 
         self.graph_and_parents = {}
         self.build_and_parents()
@@ -81,9 +70,12 @@ class AttackGraph:
             if node in self.graph_expanded.keys():
                 continue
             self.graph_expanded[node] = []
+            # sub_node = single node as found in original graph
             for sub_node in node.split("|"):
+                # children of each sub_node
                 for child in self.graph[sub_node]:
                     if child not in node and self.sort(node, child) not in self.graph_expanded[node]:
+                        # child is an AND step
                         if child in self.graph_and_parents:
                             condition_fulfilled = True
                             for parent in self.graph_and_parents[child]:
@@ -101,12 +93,16 @@ class AttackGraph:
         return '|'.join(nodes)
 
     def build_and_parents(self):
+        """
+        Takes the model and builds a list of AND steps with their respective parents
+        This dictionary is then used to check if the condition for reaching an AND step is fulfilled
+        """
         for instance in self.model:
-            for _, step in instance.attack_steps.items():
+            for step in instance.attack_steps.values():
                 s = f'{instance.type}.{instance.name}.{step.name}'
                 if step.has_children():
                     if type(step.children) == dict:
-                        for _, child in step.children.items():
+                        for child in step.children.values():
                             if child.type != 'AND':
                                 continue
                             ss = f'{child.instance.type}.{child.instance.name}.{child.name}'
@@ -129,7 +125,7 @@ class AttackGraph:
         """
         self.model = model
         for instance in model:
-            for _, step in instance.attack_steps.items():
+            for step in instance.attack_steps.values():
                 s = f'{instance.type}.{instance.name}.{step.name}'
                 if step.has_children():
                     self.graph[s] = []
@@ -142,12 +138,9 @@ class AttackGraph:
                         self.graph[s].append(f'{step.children.instance.type}.'
                                              f'{step.children.instance.name}.'
                                              f'{step.children.name}')
-        graph_tmp = {}
-        for _, items in self.graph.items():
-            for item in items:
-                if item not in self.graph.keys():
-                    graph_tmp[item] = []
-        self.graph.update(graph_tmp)
+        # add all steps without children
+        self.graph.update(
+            {item: [] for items in self.graph.values() for item in items if item not in self.graph.keys()})
 
     def build_rewards(self):
         """
