@@ -16,18 +16,17 @@ def visualize_graph(file_name="graph_visualization"):
     max_v = max(V)
     min_v = min(V)
     for key, items in attack_graph.graph_expanded.items():
-        if not items == []:  # TODO: no empty node left in graph....can remove check here
-            key_idx = attack_graph.key_indices[key]
-            v = (V[key_idx] - min_v) / (max_v - min_v)
+        key_idx = attack_graph.key_indices[key]
+        v = (V[key_idx] - min_v) / (max_v - min_v)
+        color = colors.to_hex([v, 0.0, 1 - v])
+        net.add_node(key, key + "\n" + '%.2f' % V[key_idx], title=key, color=color)
+        for item in items:
+            item_idx = attack_graph.key_indices[item]
+            v = (V[item_idx] - min_v) / (max_v - min_v)
             color = colors.to_hex([v, 0.0, 1 - v])
-            net.add_node(key, key + "\n" + '%.2f' % V[key_idx], title=key, color=color)
-            for item in items:
-                item_idx = attack_graph.key_indices[item]
-                v = (V[item_idx] - min_v) / (max_v - min_v)
-                color = colors.to_hex([v, 0.0, 1 - v])
-                net.add_node(item, item + "\n" + '%.2f' % V[item_idx], title=item, color=color)
+            net.add_node(item, item + "\n" + '%.2f' % V[item_idx], title=item, color=color)
 
-                net.add_edge(key, item, title=attack_graph.rewards[key_idx, item_idx])
+            net.add_edge(key, item, title=attack_graph.rewards[key_idx, item_idx])
 
     # enable buttons to change and generate options (omit filter for all buttons)
     # NOTE: showing buttons AND setting options does not work...

@@ -10,6 +10,7 @@ from Helpers.Constants import *
 def load_example_graph(number_of_features, embedding_vector_lengths):
     device = "cpu"
     graph = AttackGraph()
+
     node_features, adjacency_list = parse_features(graph, number_of_features, embedding_vector_lengths)
     node_labels, _ = graph.value_iteration()
 
@@ -22,49 +23,25 @@ def load_example_graph(number_of_features, embedding_vector_lengths):
     return node_features, node_labels, topology
 
 
-def parse_features(graph: AttackGraph, number_of_features, embedding_vector_lengths: list):
-    vocabularies = get_vocabularies()
-
-    # features: step name, asset type, asset name, reward, neighbourhood rank
-    N = len(graph.graph)
+def parse_features(graph: AttackGraph, number_of_features, embedding_vector_length: int):
+    # features: (step name, asset type, asset name), reward, neighbourhood rank
+    N = len(graph.graph_expanded)
 
     # the node feature matrix
-    M = torch.ones((N, sum(embedding_vector_lengths) + (number_of_features - len(embedding_vector_lengths))),
+    M = torch.ones((N, embedding_vector_length + (number_of_features - 1)),
                    dtype=torch.double) * (-999)
 
-    embeddings = [None, None, None]
-    embeddings[STEP_NAME] = nn.Embedding(len(vocabularies["step_names"]), embedding_vector_lengths[STEP_NAME])
-    embeddings[ASSET_TYPE] = nn.Embedding(len(vocabularies["asset_types"]), embedding_vector_lengths[ASSET_TYPE])
-    embeddings[ASSET_NAME] = nn.Embedding(len(vocabularies["asset_names"]), embedding_vector_lengths[ASSET_NAME])
+    embeddings = nn.Embedding(len(graph.vocabulary), embedding_vector_length)
 
     adjacency_matrix = {}
-    for step, children in graph.graph.items():
-        asset_type, asset_name, step_name = step.split(".")
-
-        # build M without using embeddings
-        # M[graph.key_indices[step], STEP_NAME] = step_names[str(asset_type + "." + step_name)]
-        # M[graph.key_indices[step], ASSET_TYPE] = asset_types[asset_type]
-        # M[graph.key_indices[step], ASSET_NAME] = asset_names[
-        #     "".join(i for i in asset_name if not i.isdigit())]
-        # M[graph.key_indices[step], REWARD] = graph.get_reward(step)
-        # M[graph.key_indices[step], RANK] = len(graph.graph[step])
-
+    for step, children in graph.graph_expanded.items():
         # build M using embeddings
-        M[graph.key_indices[step], STEP_NAME:STEP_NAME + embedding_vector_lengths[STEP_NAME]] = \
-            embeddings[STEP_NAME](torch.tensor(vocabularies["step_names"][str(asset_type + "." + step_name)],
-                                               dtype=torch.long))
+        M[graph.key_indices[step], STEP:STEP + embedding_vector_length] = \
+            embeddings(torch.tensor(graph.vocabulary[step], dtype=torch.long))
 
-        M[graph.key_indices[step], ASSET_TYPE:ASSET_TYPE + embedding_vector_lengths[ASSET_TYPE]] = \
-            embeddings[ASSET_TYPE](torch.tensor(vocabularies["asset_types"][asset_type],
-                                                dtype=torch.long))
-
-        M[graph.key_indices[step], ASSET_NAME:ASSET_NAME + embedding_vector_lengths[ASSET_NAME]] = \
-            embeddings[ASSET_NAME](torch.tensor(vocabularies["asset_names"]
-                                                ["".join(i for i in asset_name if not i.isdigit())],
-                                                dtype=torch.long))
-
-        M[graph.key_indices[step], REWARD] = graph.get_reward(step)
-        M[graph.key_indices[step], RANK] = len(graph.graph[step])
+        step_rewards = [reward for reward in graph.rewards[:, graph.key_indices[step]] if reward != -999]
+        M[graph.key_indices[step], REWARD] = np.mean(step_rewards) if len(step_rewards) > 0 else -999
+        M[graph.key_indices[step], RANK] = len(graph.graph_expanded[step])
 
         # build the adjacency matrix
         children_indx = []

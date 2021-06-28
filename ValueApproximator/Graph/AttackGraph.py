@@ -1,3 +1,5 @@
+import json
+
 import Helpers.Importer as Importer
 import Generator.modelGenerator as ModelGenerator
 import numpy as np
@@ -27,24 +29,26 @@ class AttackGraph:
     # effective reward (immediate reward - ttc) for all transitions
     rewards: np.ndarray
 
+    # vocabulary used for embeddings
+    vocabulary: dict
+
     def __init__(self):
         self.graph = {}
-        self.graph_expanded = {}
         self.concatenate_model_instances(ModelGenerator.getModel())
         self.object_dict, self.ttc_dict = Importer.readObjectSpecifications(False)
 
-        # determine all entry points from which the graph will be expanded
-        children = [item for items in self.graph.values() for item in items]
-        children = np.unique(children)
-
-        # determine entry points from which the graph expansion takes place
-        eps = [key for key in self.graph if key not in children]
-
         self.graph_and_parents = {}
         self.build_and_parents()
+
+        # determine entry points from which the graph expansion takes place
+        children = [item for items in self.graph.values() for item in items]
+        eps = [key for key in self.graph if key not in np.unique(children)]
+
+        self.graph_expanded = {}
         self.expand_graph(eps)
         self.key_indices = dict(zip(self.graph_expanded.keys(), [i for i in range(len(self.graph_expanded))]))
         self.rewards = self.build_rewards()
+        self.update_vocabulary()
 
     graph_expanded: dict
     graph_and_parents: dict
@@ -86,7 +90,11 @@ class AttackGraph:
                             self.graph_expanded[node].append(self.sort(node, child))
                 self.expand_graph(self.graph_expanded[node])
 
-    def sort(self, node: str, child: str):
+    @staticmethod
+    def sort(node: str, child: str):
+        """
+        Concatenates the node name and the child to a new, sorted node name
+        """
         nodes = node.split("|")
         nodes.append(child)
         nodes.sort()
@@ -187,20 +195,6 @@ class AttackGraph:
         (asset, _, step) = entry.split(".")
         return self.ttc_dict[asset][step]
 
-    def get_success_probability(self, distr: []) -> float:
-        """
-        Returns the success probability [0, 1] of the given distribution (bernouilli or exponential)
-        taken the maximum effort of the attacker
-        """
-        distribution = distr[0]
-        parameter = distr[1]
-        if distribution.lower() == "bernoulli":
-            return parameter
-        elif distribution.lower() == "exponential":
-            return 1 - (1.0 / math.pow(math.e, parameter * self.effort))
-        else:
-            return 1.0
-
     def parse_distribution(self, entry: str):
         """
         Returns the distribution name and parameter if one is associated with the entry given
@@ -248,3 +242,18 @@ class AttackGraph:
             return 0
         elif distribution == "Disabled":
             return math.inf
+
+    def update_vocabulary(self):
+        with open("ValueApproximator/Resources/vocabulary.json", "r") as vocab:
+            self.vocabulary = json.load(vocab)
+        counter: int
+        if len(self.vocabulary) == 0:
+            counter = 0
+        else:
+            counter = list(self.vocabulary.items())[1][-1] + 1
+        for key in self.graph_expanded.keys():
+            if key not in self.vocabulary:
+                self.vocabulary[key] = counter
+                counter += 1
+        with open("ValueApproximator/Resources/vocabulary.json", "w") as vocab:
+            json.dump(self.vocabulary, vocab)

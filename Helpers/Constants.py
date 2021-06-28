@@ -6,11 +6,9 @@ import os
 import enum
 
 # feature descriptors
-STEP_NAME = 0
-ASSET_TYPE = 1
-ASSET_NAME = 2
-REWARD = 3
-RANK = 4
+REWARD = 0
+RANK = 1
+STEP = 2
 
 
 # 3 different model training/eval phases used in train.py
