@@ -33,8 +33,9 @@ BEST_VAL_PERF = 0
 BEST_VAL_LOSS = 0
 PATIENCE_CNT = 0
 
+BINARIES_PATH = os.path.join(os.path.dirname(__file__), os.pardir, 'models', 'binaries')
 CHECKPOINTS_PATH = os.path.join(os.path.dirname(__file__), os.pardir, 'models', 'checkpoints')
-
+DATA_DIR_PATH = os.path.join(os.path.dirname(__file__), os.pardir, 'data')
 
 #
 # AttackGraph specific information

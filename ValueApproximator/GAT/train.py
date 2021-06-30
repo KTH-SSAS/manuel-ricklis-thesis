@@ -1,10 +1,19 @@
 import argparse
 import time
 
+from sklearn.metrics import f1_score
+from sklearn.metrics import r2_score
 import torch
 import torch.nn as nn
+from torch.optim import Adam
+
+from Helpers.Constants import *
 
 from ValueApproximator.GAT.GAT import GAT
+from Helpers.GATUtils import *
+
+# TODO: since we work with multiple graphs, implement the data loader à la PPI code
+#       each dataloader return train, val & test sets with (features, labels, edge_index) respectively
 
 
 def train_gat(config):
@@ -28,7 +37,7 @@ def train_gat(config):
     ).to(device)
 
     # Step 3: Prepare other training related utilities (loss & optimizer and decorator function)
-    loss_fn = nn.BCEWithLogitsLoss(reduction='mean')
+    loss_fn = nn.CrossEntropyLoss(reduction='mean')
     optimizer = Adam(gat.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
 
     # The decorator function makes things cleaner since there is a lot of redundancy between the train and val loops
@@ -69,13 +78,13 @@ def train_gat(config):
 
     # Save the latest GAT in the binaries directory
     torch.save(
-        utils.get_training_state(config, gat),
-        os.path.join(BINARIES_PATH, utils.get_available_binary_name(config['dataset_name']))
+        get_training_state(config, gat),
+        os.path.join(BINARIES_PATH, get_available_binary_name(config['dataset_name']))
     )
 
 
 # Simple decorator function so that I don't have to pass arguments that don't change from epoch to epoch
-def get_main_loop(config, gat, cross_entropy_loss, optimizer, node_features, node_labels, edge_index, train_indices,
+def get_main_loop(config, gat, loss_function, optimizer, node_features, node_labels, edge_index, train_indices,
                   val_indices, test_indices, patience_period, time_start):
     node_dim = 0  # node axis
 
@@ -120,14 +129,7 @@ def get_main_loop(config, gat, cross_entropy_loss, optimizer, node_features, nod
         # shape = (N, C) where N is the number of nodes in the split (train/val/test) and C is the number of classes
         nodes_unnormalized_scores = gat(graph_data)[0].index_select(node_dim, node_indices)
 
-        # Example: let's take an output for a single node on Cora - it's a vector of size 7 and it contains unnormalized
-        # scores like: V = [-1.393,  3.0765, -2.4445,  9.6219,  2.1658, -5.5243, -4.6247]
-        # What PyTorch's cross entropy loss does is for every such vector it first applies a softmax, and so we'll
-        # have the V transformed into: [1.6421e-05, 1.4338e-03, 5.7378e-06, 0.99797, 5.7673e-04, 2.6376e-07, 6.4848e-07]
-        # secondly, whatever the correct class is (say it's 3), it will then take the element at position 3,
-        # 0.99797 in this case, and the loss will be -log(0.99797). It does this for every node and applies a mean.
-        # You can see that as the probability of the correct class for most nodes approaches 1 we get to 0 loss! <3
-        loss = cross_entropy_loss(nodes_unnormalized_scores, gt_node_labels)
+        loss = loss_function(nodes_unnormalized_scores, gt_node_labels)
 
         if phase == LoopPhase.TRAIN:
             optimizer.zero_grad()  # clean the trainable weights gradients in the computational graph (.grad fields)
@@ -135,11 +137,8 @@ def get_main_loop(config, gat, cross_entropy_loss, optimizer, node_features, nod
             optimizer.step()  # apply the gradients to weights
 
         # Calculate the main metric - accuracy
+        accuracy = r2_score(nodes_unnormalized_scores, gt_node_labels)
 
-        # Finds the index of maximum (unnormalized) score for every node and that's the class prediction for that node.
-        # Compare those to true (ground truth) labels and find the fraction of correct predictions -> accuracy metric.
-        class_predictions = torch.argmax(nodes_unnormalized_scores, dim=-1)
-        accuracy = torch.sum(torch.eq(class_predictions, gt_node_labels).long()).item() / len(gt_node_labels)
 
         #
         # Logging
@@ -155,7 +154,7 @@ def get_main_loop(config, gat, cross_entropy_loss, optimizer, node_features, nod
             if config['checkpoint_freq'] is not None and (epoch + 1) % config['checkpoint_freq'] == 0:
                 ckpt_model_name = f'gat_{config["dataset_name"]}_ckpt_epoch_{epoch + 1}.pth'
                 config['test_perf'] = -1
-                torch.save(utils.get_training_state(config, gat), os.path.join(CHECKPOINTS_PATH, ckpt_model_name))
+                torch.save(get_training_state(config, gat), os.path.join(CHECKPOINTS_PATH, ckpt_model_name))
 
         elif phase == LoopPhase.VAL:
             # Log metrics
@@ -218,7 +217,7 @@ def get_training_args():
         # GNNs, contrary to CNNs, are often shallow (it ultimately depends on the graph properties)
         "num_of_layers": 3,
         "num_heads_per_layer": [4, 4, 6],
-        "num_features_per_layer": [NUM_INPUT_FEATURES, 256, 256, NUM_CLASSES],
+        "num_features_per_layer": [NUM_INPUT_FEATURES, 256, 256, 1],
         "add_skip_connection": True,
         "bias": True,
         "dropout": 0.0
