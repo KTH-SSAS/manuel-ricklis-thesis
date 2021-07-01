@@ -1,7 +1,6 @@
 import json
 
 import Helpers.Importer as Importer
-import Generator.modelGenerator as ModelGenerator
 import numpy as np
 import math
 import re
@@ -11,9 +10,6 @@ from random import random
 
 
 class AttackGraph:
-    # all attack steps in the system with their respective children
-    model: dict
-
     # attack steps with their respective children
     graph: dict
 
@@ -29,18 +25,19 @@ class AttackGraph:
     # effective reward (immediate reward - ttc) for all transitions
     rewards: np.ndarray
 
-    # vocabulary used for embeddings
+    # vocabulary used for embeddings            -> can be static, as it includes ALL steps from ALL graphs
     vocabulary: dict
 
-    def __init__(self):
+    def __init__(self, model):
         self.graph = {}
-        self.concatenate_model_instances(ModelGenerator.getModel())
+        self.concatenate_model_instances(model)
         self.object_dict, self.ttc_dict = Importer.readObjectSpecifications(False)
 
         self.graph_and_parents = {}
-        self.build_and_parents()
+        self.build_and_parents(model)
 
         # determine entry points from which the graph expansion takes place
+        #  -> possibly not necessary anymore once there is only one fully connected graph per generated model
         children = [item for items in self.graph.values() for item in items]
         eps = [key for key in self.graph if key not in np.unique(children)]
 
@@ -100,12 +97,12 @@ class AttackGraph:
         nodes.sort()
         return '|'.join(nodes)
 
-    def build_and_parents(self):
+    def build_and_parents(self, model):
         """
         Takes the model and builds a list of AND steps with their respective parents
         This dictionary is then used to check if the condition for reaching an AND step is fulfilled
         """
-        for instance in self.model:
+        for instance in model:
             for step in instance.attack_steps.values():
                 s = f'{instance.type}.{instance.name}.{step.name}'
                 if step.has_children():
@@ -131,7 +128,6 @@ class AttackGraph:
         """
         Concatenates all steps of all instances in the generated model to one dictionary
         """
-        self.model = model
         for instance in model:
             for step in instance.attack_steps.values():
                 s = f'{instance.type}.{instance.name}.{step.name}'
@@ -246,10 +242,10 @@ class AttackGraph:
     def update_vocabulary(self):
         with open("ValueApproximator/Resources/vocabulary.json", "r") as vocab:
             self.vocabulary = json.load(vocab)
-        counter: int
         if len(self.vocabulary) == 0:
             counter = 0
         else:
+            # continue the counting from the last entry in the vocabulary
             counter = list(self.vocabulary.items())[1][-1] + 1
         for key in self.graph_expanded.keys():
             if key not in self.vocabulary:

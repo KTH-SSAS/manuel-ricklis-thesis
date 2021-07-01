@@ -1,10 +1,26 @@
 import numpy as np
 import torch
+import json
 from matplotlib import colors
 from pyvis.network import Network
 from torch.utils.data import DataLoader, Dataset
 
-from ValueApproximator.Graph.AttackGraph import AttackGraph as Graph
+from Generator import modelGenerator
+from Generator.modelGenerator import ModelGenerator
+from ValueApproximator.Graph.AttackGraph import AttackGraph as AttackGraph
+
+
+def create_and_export_attack_graphs_for_learning(prefix: str, amount: int):
+    generator = ModelGenerator()
+    for i in range(amount):
+        model = generator.generate_model_based_on_random_parameters(5, 2, 8, 4, 5, 1, 3, 1, 4, 2)
+        attack_graph = AttackGraph(model)
+        with open("AttackGraphs/" + prefix + "_" + str(i) + ".json", "w+") as f:
+            json.dump({
+                "graph_expanded": attack_graph.graph_expanded,
+                "key_indices": attack_graph.key_indices,
+                "rewards": attack_graph.rewards.tolist()
+            }, f)
 
 
 def load_graph_data(batch_size=2):
@@ -24,9 +40,9 @@ def load_graph_data(batch_size=2):
         node_features = None
         # shape = (NS, 1)
         node_labels = None
-        collection_of_graphs = None # nx.DiGraph(json_graph.node_link_graph(nodes_links_dict))
+        collection_of_graphs = None  # nx.DiGraph(json_graph.node_link_graph(nodes_links_dict))
         # For each node in the above collection, ids specify to which graph the node belongs to
-        graph_ids = None # np.load(os.path.join(PPI_PATH, F'{split}_graph_id.npy'))
+        graph_ids = None  # np.load(os.path.join(PPI_PATH, F'{split}_graph_id.npy'))
         num_graphs_per_split_cumulative.append(num_graphs_per_split_cumulative[-1] + len(np.unique(graph_ids)))
 
         # Split the collection of graphs into separate graphs
@@ -132,18 +148,11 @@ def graph_collate_fn(batch):
     return node_features, node_labels, edge_index
 
 
-def create_and_export_attack_graphs_for_learning():
-    pass
-    # generator = ModelGenerator()
-    # model = generator.generate_model()
-    # generator.generate_model_based_on_random_parameters(5, 2, 8, 4, 5, 1, 3, 1, 4, 2)
-
-
 def visualize_graph(file_name="graph_visualization"):
     """
     Generate a html with Pyvis for an interactive graph visualization
     """
-    attack_graph = Graph()
+    attack_graph = AttackGraph()
     V, _ = attack_graph.value_iteration()
     net = Network(height='900px', width='75%', notebook=True)
 
@@ -178,10 +187,10 @@ def print_sample_graph_values():
     Performs value iteration and prints it's results
     """
     np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
-    graph = Graph()
+    graph = AttackGraph(modelGenerator.getModel())
     V, Q = graph.value_iteration()
     i = 0
-    for key in graph.graph.keys():
+    for key in graph.graph_expanded.keys():
         if V[i] > 0:
             print(f'{graph.key_indices[key]}   {key} - {V[i]}')
         i = i + 1

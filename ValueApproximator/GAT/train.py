@@ -13,7 +13,7 @@ from ValueApproximator.GAT.GAT import GAT
 from Helpers.GATUtils import *
 
 # TODO: since we work with multiple graphs, implement the data loader à la PPI code
-#       each dataloader return train, val & test sets with (features, labels, edge_index) respectively
+#       each data loader returns train, val & test sets with (features, labels, edge_index) respectively
 
 
 def train_gat(config):

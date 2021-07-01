@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 
-from Helpers.Importer import get_vocabularies
+from Generator import modelGenerator
 from ValueApproximator.Graph.AttackGraph import AttackGraph
 from Helpers.Constants import *
 
@@ -13,7 +13,7 @@ from Helpers.Constants import BINARIES_PATH
 
 def load_example_graph(number_of_features, embedding_vector_lengths):
     device = "cpu"
-    graph = AttackGraph()
+    graph = AttackGraph(modelGenerator.getModel())
 
     node_features, adjacency_list = parse_features(graph, number_of_features, embedding_vector_lengths)
     node_labels, _ = graph.value_iteration()
@@ -35,6 +35,7 @@ def parse_features(graph: AttackGraph, number_of_features, embedding_vector_leng
     M = torch.ones((N, embedding_vector_length + (number_of_features - 1)),
                    dtype=torch.double) * (-999)
 
+    # the plan is to generate embeddings only after the graphs are generated, thus not for every parsing....
     embeddings = nn.Embedding(len(graph.vocabulary), embedding_vector_length)
 
     adjacency_matrix = {}

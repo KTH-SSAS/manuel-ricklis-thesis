@@ -104,24 +104,17 @@ class ModelGenerator(object):
         self.model = list()
         return
 
-    def generate_model_based_on_random_parameters(self, networks_mean, networks_sd, services_mean,
-                                                  services_sd, data_mean, data_sd, id_data_mean,
-                                                  id_data_sd, service_id_mean, service_id_sd):
-
+    def generate_model_based_on_random_parameters(self, networks_mean, networks_sd, services_mean, services_sd,
+                                                  data_mean, data_sd, id_data_mean, id_data_sd, service_id_mean,
+                                                  service_id_sd):
         number_of_networks = int(NormalDist(mu=networks_mean, sigma=networks_sd).inv_cdf(0.95))
         number_of_services = int(NormalDist(mu=services_mean, sigma=services_sd).inv_cdf(0.95))
         number_of_data_per_service = int(NormalDist(mu=data_mean, sigma=data_sd).inv_cdf(0.95))
         number_of_data_per_identity = int(NormalDist(mu=id_data_mean, sigma=id_data_sd).inv_cdf(0.95))
         number_of_identities_per_service = int(NormalDist(mu=service_id_mean, sigma=service_id_sd).inv_cdf(0.95))
 
-        print(number_of_identities_per_service)
-        print(number_of_data_per_identity)
-        print(number_of_data_per_service)
-        print(number_of_services)
-        print(number_of_networks)
-
-        # return self.generate_model(number_of_networks, number_of_services, number_of_data_per_service,
-        #                           number_of_data_per_identity, number_of_identities_per_service)
+        return self.generate_model(number_of_networks, number_of_services, number_of_data_per_service,
+                                   number_of_data_per_identity, number_of_identities_per_service)
 
     def generate_model(self, number_of_networks=2, number_of_services=5, number_of_data_per_service=2,
                        number_of_data_per_identity=2, number_of_identities_per_service=3):

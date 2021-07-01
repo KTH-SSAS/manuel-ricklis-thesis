@@ -44,5 +44,4 @@ DATA_DIR_PATH = os.path.join(os.path.dirname(__file__), os.pardir, 'data')
 TRAIN_RANGE = [0, 140]
 VAL_RANGE = [140, 140+500]
 TEST_RANGE = [1708, 1708+1000]
-NUM_INPUT_FEATURES = 5
-NUM_CLASSES = 1
+NUM_INPUT_FEATURES = 3
