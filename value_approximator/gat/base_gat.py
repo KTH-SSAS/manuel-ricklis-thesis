@@ -22,7 +22,7 @@ class BaseGAT(nn.Module):
 
         #
         # Trainable weights: linear projection matrix (denoted as "W" in the paper), attention target/source
-        # (denoted as "a" in the paper) and bias (not mentioned in the paper but present in the official GAT repo)
+        # (denoted as "a" in the paper) and bias (not mentioned in the paper but present in the official gat repo)
         #
 
         # You can treat this one matrix as num_of_heads independent W matrices
@@ -36,7 +36,7 @@ class BaseGAT(nn.Module):
         self.scoring_fn_target = nn.Parameter(torch.Tensor(1, num_of_heads, num_out_features))
         self.scoring_fn_source = nn.Parameter(torch.Tensor(1, num_of_heads, num_out_features))
 
-        # Bias is definitely not crucial to GAT - feel free to experiment (I pinged the main author, Petar, on this one)
+        # Bias is definitely not crucial to gat - feel free to experiment (I pinged the main author, Petar, on this one)
         if bias and concat:
             self.bias = nn.Parameter(torch.Tensor(num_of_heads * num_out_features))
         elif bias and not concat:

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 # from https://github.com/gordicaleksa/pytorch-GAT/blob/main/models/definitions/GAT.py
-from ValueApproximator.GAT.BaseGAT import BaseGAT
+from value_approximator.gat.BaseGAT import BaseGAT
 
 class GAT(torch.nn.Module):
     def __init__(self, num_of_layers, num_heads_per_layer, num_features_per_layer, add_skip_connection=True, bias=True,
@@ -10,15 +10,15 @@ class GAT(torch.nn.Module):
         super().__init__()
         assert num_of_layers == len(num_heads_per_layer) == len(num_features_per_layer) - 1, f'Enter valid arch params.'
 
-        num_heads_per_layer = [1] + num_heads_per_layer  # trick - so that I can nicely create GAT layers below
+        num_heads_per_layer = [1] + num_heads_per_layer  # trick - so that I can nicely create gat layers below
 
-        gat_layers = []  # collect GAT layers
+        gat_layers = []  # collect gat layers
         for i in range(num_of_layers):
             layer = GATLayer(
                 num_in_features=num_features_per_layer[i] * num_heads_per_layer[i],  # consequence of concatenation
                 num_out_features=num_features_per_layer[i+1],
                 num_of_heads=num_heads_per_layer[i+1],
-                concat=True if i < num_of_layers - 1 else False,  # last GAT layer does mean avg, the others do concat
+                concat=True if i < num_of_layers - 1 else False,  # last gat layer does mean avg, the others do concat
                 activation=nn.ELU() if i < num_of_layers - 1 else None,  # last layer just outputs raw scores
                 dropout_prob=dropout,
                 add_skip_connection=add_skip_connection,
@@ -75,7 +75,7 @@ class GATLayer(BaseGAT):
         # We project the input node features into NH independent output features (one for each attention head)
         nodes_features_proj = self.linear_proj(in_nodes_features).view(-1, self.num_of_heads, self.num_out_features)
 
-        nodes_features_proj = self.dropout(nodes_features_proj)  # in the official GAT imp they did dropout here as well
+        nodes_features_proj = self.dropout(nodes_features_proj)  # in the official gat imp they did dropout here as well
 
         #
         # Step 2: Edge attention calculation

@@ -1,51 +1,43 @@
 import json
 
-import Helpers.Importer as Importer
+from helpers.importer import read_object_specifications
 import numpy as np
 import math
 import re
+from glob import glob
 from scipy.stats import expon
 from scipy.stats import bernoulli
 from random import random
 
 
 class AttackGraph:
-    # attack steps with their respective children
-    graph: dict
+    object_dict, ttc_dict = read_object_specifications()
+    with open("value_approximator/Resources/vocabulary.json", "r") as vocab:
+        vocabulary = json.load(vocab)
 
-    # time to compromise distributions
-    ttc_dict: dict
+    def __init__(self, model=None, import_dict: dict = None):
+        if model:
+            self.graph = {}
+            self.concatenate_model_instances(model)
+            self.graph_and_parents = {}
+            self.build_and_parents(model)
 
-    # mal specification of assets and their steps
-    object_dict: dict
+            # determine entry points from which the graph expansion takes place
+            #  -> possibly not necessary anymore once there is only one fully connected graph per generated model
+            children = [item for items in self.graph.values() for item in items]
+            eps = [key for key in self.graph if key not in np.unique(children)]
 
-    # mapping from attack steps to an index
-    key_indices: dict
-
-    # effective reward (immediate reward - ttc) for all transitions
-    rewards: np.ndarray
-
-    # vocabulary used for embeddings            -> can be static, as it includes ALL steps from ALL graphs
-    vocabulary: dict
-
-    def __init__(self, model):
-        self.graph = {}
-        self.concatenate_model_instances(model)
-        self.object_dict, self.ttc_dict = Importer.readObjectSpecifications(False)
-
-        self.graph_and_parents = {}
-        self.build_and_parents(model)
-
-        # determine entry points from which the graph expansion takes place
-        #  -> possibly not necessary anymore once there is only one fully connected graph per generated model
-        children = [item for items in self.graph.values() for item in items]
-        eps = [key for key in self.graph if key not in np.unique(children)]
-
-        self.graph_expanded = {}
-        self.expand_graph(eps)
-        self.key_indices = dict(zip(self.graph_expanded.keys(), [i for i in range(len(self.graph_expanded))]))
-        self.rewards = self.build_rewards()
-        self.update_vocabulary()
+            self.graph_expanded = {}
+            self.expand_graph(eps)
+            self.key_indices = dict(zip(self.graph_expanded.keys(), [i for i in range(len(self.graph_expanded))]))
+            self.rewards = self.build_rewards()
+            self.update_vocabulary(self.graph_expanded)
+        elif import_dict:
+            self.graph_expanded = import_dict["graph_expanded"]
+            self.key_indices = import_dict["key_indices"]
+            self.rewards = np.asarray(import_dict["rewards"])
+        else:
+            raise Exception("Invalid init parameters for AttackGraph")
 
     graph_expanded: dict
     graph_and_parents: dict
@@ -68,7 +60,7 @@ class AttackGraph:
         """
 
         for node in current_nodes_to_expand:
-            if node in self.graph_expanded.keys():
+            if node in self.graph_expanded:
                 continue
             self.graph_expanded[node] = []
             # sub_node = single node as found in original graph
@@ -86,16 +78,6 @@ class AttackGraph:
                         else:
                             self.graph_expanded[node].append(self.sort(node, child))
                 self.expand_graph(self.graph_expanded[node])
-
-    @staticmethod
-    def sort(node: str, child: str):
-        """
-        Concatenates the node name and the child to a new, sorted node name
-        """
-        nodes = node.split("|")
-        nodes.append(child)
-        nodes.sort()
-        return '|'.join(nodes)
 
     def build_and_parents(self, model):
         """
@@ -164,7 +146,18 @@ class AttackGraph:
 
         return rewards
 
-    def get_entry(self, parent, child):
+    @staticmethod
+    def sort(node: str, child: str):
+        """
+        Concatenates the node name and the child to a new, sorted node name
+        """
+        nodes = node.split("|")
+        nodes.append(child)
+        nodes.sort()
+        return '|'.join(nodes)
+
+    @staticmethod
+    def get_entry(parent, child):
         for c in child.split("|"):
             if c not in parent:
                 return c
@@ -183,31 +176,35 @@ class AttackGraph:
             i = i + 1
         return V, Q
 
-    def get_reward(self, step) -> float:
+    @staticmethod
+    def get_reward(step: str) -> float:
         (assetID, assetName, stepName) = step.split(".")
-        return self.object_dict[assetID][stepName]
+        return AttackGraph.object_dict[assetID][stepName]
 
-    def get_step_distribution(self, entry: str) -> str:
+    @staticmethod
+    def get_step_distribution(entry: str) -> str:
         (asset, _, step) = entry.split(".")
-        return self.ttc_dict[asset][step]
+        return AttackGraph.ttc_dict[asset][step]
 
-    def parse_distribution(self, entry: str):
+    @staticmethod
+    def parse_distribution(entry: str):
         """
         Returns the distribution name and parameter if one is associated with the entry given
         """
-        distribution = self.get_step_distribution(entry)
+        distribution = AttackGraph.get_step_distribution(entry)
         if distribution == "":
             return 0
         ordinal_match = re.match("^.*(?!\d+).*$", distribution)
         distribution_name: str
         distribution_parameter: float
         if ordinal_match:
-            return self.parse_ordinal(distribution)
+            return AttackGraph.parse_ordinal(distribution)
         else:
             distribution_match = re.match("^(\w+)\((.+)\)$", distribution)
-            return self.get_ttc([distribution_match.group(1), distribution_match.group(2)])
+            return AttackGraph.get_ttc([distribution_match.group(1), distribution_match.group(2)])
 
-    def get_ttc(self, distribution):
+    @staticmethod
+    def get_ttc(distribution):
         '''
         Samples from the given distribution
         '''
@@ -217,7 +214,8 @@ class AttackGraph:
         else:
             return expon.ppf(q=0.95, scale=1 / value)
 
-    def parse_ordinal(self, distribution: str):
+    @staticmethod
+    def parse_ordinal(distribution: str):
         """
         Translates the ordinal description to the distributions used
         https://github.com/mal-lang/malcompiler/wiki/Supported-distribution-functions
@@ -239,17 +237,22 @@ class AttackGraph:
         elif distribution == "Disabled":
             return math.inf
 
-    def update_vocabulary(self):
-        with open("ValueApproximator/Resources/vocabulary.json", "r") as vocab:
-            self.vocabulary = json.load(vocab)
-        if len(self.vocabulary) == 0:
-            counter = 0
-        else:
-            # continue the counting from the last entry in the vocabulary
-            counter = list(self.vocabulary.items())[1][-1] + 1
-        for key in self.graph_expanded.keys():
-            if key not in self.vocabulary:
-                self.vocabulary[key] = counter
+    @staticmethod
+    def update_vocabulary(graph: dict):
+        # continue the counting from the last entry in the vocabulary if not empty
+        counter = 0 if len(AttackGraph.vocabulary) == 0 else list(AttackGraph.vocabulary.items())[1][-1] + 1
+        for key in graph:
+            if key not in AttackGraph.vocabulary:
+                AttackGraph.vocabulary[key] = counter
                 counter += 1
-        with open("ValueApproximator/Resources/vocabulary.json", "w") as vocab:
-            json.dump(self.vocabulary, vocab)
+        with open("value_approximator/Resources/vocabulary.json", "w") as vocab:
+            json.dump(AttackGraph.vocabulary, vocab)
+
+
+def import_attack_graphs(prefix: str) -> []:
+    attack_graphs = []
+    for file_name in glob(f'AttackGraphs/{prefix}_[0-9]*.json'):
+        with open(file_name, "r") as f:
+            dictionary = json.load(f)
+            attack_graphs.append(AttackGraph(import_dict=dictionary))
+    return attack_graphs

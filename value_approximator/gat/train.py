@@ -7,10 +7,10 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 
-from Helpers.Constants import *
+from helpers.Constants import *
 
-from ValueApproximator.GAT.GAT import GAT
-from Helpers.GATUtils import *
+from value_approximator.GAT.GAT import GAT
+from helpers.GATUtils import *
 
 # TODO: since we work with multiple graphs, implement the data loader à la PPI code
 #       each data loader returns train, val & test sets with (features, labels, edge_index) respectively

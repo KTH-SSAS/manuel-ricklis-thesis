@@ -5,9 +5,9 @@ from matplotlib import colors
 from pyvis.network import Network
 from torch.utils.data import DataLoader, Dataset
 
-from Generator import modelGenerator
-from Generator.modelGenerator import ModelGenerator
-from ValueApproximator.Graph.AttackGraph import AttackGraph as AttackGraph
+from model_generator import model_generator
+from model_generator.model_generator import ModelGenerator
+from value_approximator.graph.AttackGraph import AttackGraph as AttackGraph
 
 
 def create_and_export_attack_graphs_for_learning(prefix: str, amount: int):
@@ -176,7 +176,7 @@ def visualize_graph(file_name="graph_visualization"):
     # net.show_buttons(filter_=['physics'])
 
     # load options and override standard
-    with open("ValueApproximator/Resources/pyvis_options.json") as f:
+    with open("value_approximator/Resources/pyvis_options.json") as f:
         net.set_options(f.read())
 
     net.show("GraphVisualizations/" + file_name + ".html")
@@ -187,7 +187,7 @@ def print_sample_graph_values():
     Performs value iteration and prints it's results
     """
     np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
-    graph = AttackGraph(modelGenerator.getModel())
+    graph = AttackGraph(model_generator.getModel())
     V, Q = graph.value_iteration()
     i = 0
     for key in graph.graph_expanded.keys():

@@ -3,17 +3,18 @@ import re
 import numpy as np
 import torch.nn as nn
 import torch
+import math
 
-from Generator import modelGenerator
-from ValueApproximator.Graph.AttackGraph import AttackGraph
-from Helpers.Constants import *
+from model_generator import model_generator
+from value_approximator.graph.AttackGraph import AttackGraph
+from helpers.Constants import *
 
-from Helpers.Constants import BINARIES_PATH
+from helpers.Constants import BINARIES_PATH
 
 
 def load_example_graph(number_of_features, embedding_vector_lengths):
     device = "cpu"
-    graph = AttackGraph(modelGenerator.getModel())
+    graph = AttackGraph(model=model_generator.getModel())
 
     node_features, adjacency_list = parse_features(graph, number_of_features, embedding_vector_lengths)
     node_labels, _ = graph.value_iteration()
