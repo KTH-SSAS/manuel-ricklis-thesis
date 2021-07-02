@@ -6,10 +6,10 @@ import torch
 import math
 
 from model_generator import model_generator
-from value_approximator.graph.AttackGraph import AttackGraph
-from helpers.Constants import *
+from value_approximator.graph.attack_graph import AttackGraph
+from helpers.constants import *
 
-from helpers.Constants import BINARIES_PATH
+from helpers.constants import BINARIES_PATH
 
 
 def load_example_graph(number_of_features, embedding_vector_lengths):

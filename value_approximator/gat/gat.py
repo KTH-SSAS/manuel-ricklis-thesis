@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 # from https://github.com/gordicaleksa/pytorch-GAT/blob/main/models/definitions/GAT.py
-from value_approximator.gat.BaseGAT import BaseGAT
+from value_approximator.gat.base_gat import BaseGAT
 
 class GAT(torch.nn.Module):
     def __init__(self, num_of_layers, num_heads_per_layer, num_features_per_layer, add_skip_connection=True, bias=True,

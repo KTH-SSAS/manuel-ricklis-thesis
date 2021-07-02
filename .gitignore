@@ -25,4 +25,4 @@ venv/
 
 *.idea
 *.iml
-ValueApproximator/Resources/graph.json
+value_approximator/Resources/graph.json

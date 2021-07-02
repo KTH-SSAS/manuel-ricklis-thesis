@@ -7,10 +7,10 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 
-from helpers.Constants import *
+from helpers.constants import *
 
-from value_approximator.GAT.GAT import GAT
-from helpers.GATUtils import *
+from value_approximator.gat.gat import GAT
+from helpers.gat_utils import *
 
 # TODO: since we work with multiple graphs, implement the data loader à la PPI code
 #       each data loader returns train, val & test sets with (features, labels, edge_index) respectively
@@ -76,7 +76,7 @@ def train_gat(config):
     else:
         config['test_perf'] = -1
 
-    # Save the latest GAT in the binaries directory
+    # Save the latest gat in the binaries directory
     torch.save(
         get_training_state(config, gat),
         os.path.join(BINARIES_PATH, get_available_binary_name(config['dataset_name']))
@@ -93,7 +93,7 @@ def get_main_loop(config, gat, loss_function, optimizer, node_features, node_lab
     test_labels = node_labels.index_select(node_dim, test_indices)
 
     # node_features shape = (N, FIN), edge_index shape = (2, E)
-    graph_data = (node_features, edge_index)  # I pack data into tuples because GAT uses nn.Sequential which requires it
+    graph_data = (node_features, edge_index)  # I pack data into tuples because gat uses nn.Sequential which requires it
 
     def get_node_indices(phase):
         if phase == LoopPhase.TRAIN:
@@ -212,7 +212,7 @@ def get_training_args():
     args = parser.parse_args()
 
     # I'm leaving the hyperparam values as reported in the paper, but I experimented a bit and the comments suggest
-    # how you can make GAT achieve an even higher micro-F1 or make it smaller
+    # how you can make gat achieve an even higher micro-F1 or make it smaller
     gat_config = {
         # GNNs, contrary to CNNs, are often shallow (it ultimately depends on the graph properties)
         "num_of_layers": 3,

@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from model_generator import model_generator
 from model_generator.model_generator import ModelGenerator
-from value_approximator.graph.AttackGraph import AttackGraph as AttackGraph
+from value_approximator.graph.attack_graph import AttackGraph as AttackGraph
 
 
 def create_and_export_attack_graphs_for_learning(prefix: str, amount: int):

@@ -2,19 +2,8 @@ import json
 import re
 import glob
 
-from value_approximator.graph import AttackGraph
 
-
-def import_attack_graphs(prefix: str) -> []:
-    attack_graphs = []
-    for file_name in glob.glob(f'AttackGraphs/{prefix}_[0-9]*.json'):
-        with open(file_name, "r") as f:
-            dictionary = json.load(f)
-            attack_graphs.append(AttackGraph.AttackGraph(import_dict=dictionary))
-    return attack_graphs
-
-
-def readObjectSpecifications(from_mal=False) -> [dict, dict]:
+def read_object_specifications(from_mal=False) -> [dict, dict]:
     """
     Reads the relevant MAL files and builds a dictionary with each step as well as one with distributions assigned to steps
     """
