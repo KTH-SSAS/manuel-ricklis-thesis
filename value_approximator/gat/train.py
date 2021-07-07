@@ -37,7 +37,7 @@ def train_gat(config):
     ).to(device)
 
     # Step 3: Prepare other training related utilities (loss & optimizer and decorator function)
-    loss_fn = nn.CrossEntropyLoss(reduction='mean')
+    loss_fn = nn.MSELoss(reduction='mean')
     optimizer = Adam(gat.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
 
     # The decorator function makes things cleaner since there is a lot of redundancy between the train and val loops
