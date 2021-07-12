@@ -2,7 +2,6 @@ import json
 
 from helpers.importer import read_object_specifications
 import numpy as np
-import math
 import re
 from glob import glob
 from scipy.stats import expon
@@ -11,6 +10,7 @@ from random import random
 
 
 class AttackGraph:
+    UNREACHABLE = 1000000
     object_dict, ttc_dict = read_object_specifications()
     with open("value_approximator/Resources/vocabulary.json", "r") as vocab:
         vocabulary = json.load(vocab)
@@ -227,15 +227,15 @@ class AttackGraph:
         elif distribution == "HardAndCertain":
             return expon.ppf(q=0.95, scale=1 / 0.1)
         elif distribution == "HardAndUncertain":
-            return math.inf if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95, scale=1 / 0.1)
+            return AttackGraph.UNREACHABLE if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95, scale=1 / 0.1)
         elif distribution == "VeryHardAndCertain":
             return expon.ppf(q=0.95, scale=1 / 0.01)
         elif distribution == "VeryHardAndUncertain":
-            return math.inf if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95, scale=1 / 0.01)
+            return AttackGraph.UNREACHABLE if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95, scale=1 / 0.01)
         elif distribution == "Enabled":
             return 0
         elif distribution == "Disabled":
-            return math.inf
+            return AttackGraph.UNREACHABLE
 
     @staticmethod
     def update_vocabulary(graph: dict):
