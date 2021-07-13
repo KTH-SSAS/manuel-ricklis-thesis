@@ -29,8 +29,8 @@ class AttackGraph:
                 eps = [key for key in self.graph if key not in children]
                 for entry_point in eps:
                     self.graph_expanded = {}
-                        self.expand_graph(entry_point)
-                        print(len(self.graph_expanded))
+                    self.expand_graph(entry_point)
+                    print(len(self.graph_expanded))
                 # self.graph_expanded = {}
                 # self.expand_graph(eps)
                 # self.key_indices = dict(zip(self.graph_expanded.keys(), [i for i in range(len(self.graph_expanded))]))
