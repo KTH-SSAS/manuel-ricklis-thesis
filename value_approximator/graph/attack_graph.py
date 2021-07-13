@@ -15,23 +15,30 @@ class AttackGraph:
     with open("value_approximator/Resources/vocabulary.json", "r") as vocab:
         vocabulary = json.load(vocab)
 
-    def __init__(self, model=None, import_dict: dict = None):
+    def __init__(self, model=None, import_dict: dict = None, expand=True):
         if model:
             self.graph = {}
             self.concatenate_model_instances(model)
-            self.graph_and_parents = {}
-            self.build_and_parents(model)
+            if expand:
+                self.graph_and_parents = {}
+                self.build_and_parents(model)
 
-            # determine entry points from which the graph expansion takes place
-            #  -> possibly not necessary anymore once there is only one fully connected graph per generated model
-            children = [item for items in self.graph.values() for item in items]
-            eps = [key for key in self.graph if key not in np.unique(children)]
-
-            self.graph_expanded = {}
-            self.expand_graph(eps)
-            self.key_indices = dict(zip(self.graph_expanded.keys(), [i for i in range(len(self.graph_expanded))]))
-            self.rewards = self.build_rewards()
-            self.update_vocabulary(self.graph_expanded)
+                # determine entry points from which the graph expansion takes place
+                #  -> possibly not necessary anymore once there is only one fully connected graph per generated model
+                children = [item for items in self.graph.values() for item in items]
+                eps = [key for key in self.graph if key not in children]
+                for entry_point in eps:
+                    self.graph_expanded = {}
+                        self.expand_graph(entry_point)
+                        print(len(self.graph_expanded))
+                # self.graph_expanded = {}
+                # self.expand_graph(eps)
+                # self.key_indices = dict(zip(self.graph_expanded.keys(), [i for i in range(len(self.graph_expanded))]))
+                # self.rewards = self.build_rewards()
+                # self.update_vocabulary(self.graph_expanded)
+            else:
+                self.key_indices = dict(zip(self.graph.keys(), [i for i in range(len(self.graph))]))
+                self.rewards = self.build_rewards(expanded=False)
         elif import_dict:
             self.graph_expanded = import_dict["graph_expanded"]
             self.key_indices = import_dict["key_indices"]
@@ -58,10 +65,10 @@ class AttackGraph:
 
           * Call the method again for each list of children added
         """
-
-        for node in current_nodes_to_expand:
+        if type(current_nodes_to_expand) != list:
+            node = current_nodes_to_expand
             if node in self.graph_expanded:
-                continue
+                return
             self.graph_expanded[node] = []
             # sub_node = single node as found in original graph
             for sub_node in node.split("|"):
@@ -78,6 +85,26 @@ class AttackGraph:
                         else:
                             self.graph_expanded[node].append(self.sort(node, child))
                 self.expand_graph(self.graph_expanded[node])
+        else:
+            for node in current_nodes_to_expand:
+                if node in self.graph_expanded:
+                    continue
+                self.graph_expanded[node] = []
+                # sub_node = single node as found in original graph
+                for sub_node in node.split("|"):
+                    # children of each sub_node
+                    for child in self.graph[sub_node]:
+                        if child not in node and self.sort(node, child) not in self.graph_expanded[node]:
+                            # child is an AND step
+                            if child in self.graph_and_parents:
+                                condition_fulfilled = True
+                                for parent in self.graph_and_parents[child]:
+                                    condition_fulfilled = condition_fulfilled and parent in node
+                                if condition_fulfilled:
+                                    self.graph_expanded[node].append(self.sort(node, child))
+                            else:
+                                self.graph_expanded[node].append(self.sort(node, child))
+                    self.expand_graph(self.graph_expanded[node])
 
     def build_and_parents(self, model):
         """
@@ -128,22 +155,22 @@ class AttackGraph:
         self.graph.update(
             {item: [] for items in self.graph.values() for item in items if item not in self.graph.keys()})
 
-    def build_rewards(self):
+    def build_rewards(self, expanded=True):
         """
         Builds a reward matrix, each entry corresponding to a transition from step i to j
         """
         n = len(self.key_indices)
         rewards = np.ones((n, n)) * -999
+        graph = self.graph_expanded if expanded else self.graph
 
-        for key, steps in self.graph_expanded.items():
-            for entry_expanded in steps:
-                entry = self.get_entry(key, entry_expanded)
+        for key, steps in graph.items():
+            for entry_ in steps:
+                entry = self.get_entry(key, entry_) if expanded else entry_
                 reward = self.get_reward(entry)
                 ttc = self.parse_distribution(entry)
                 ttc = 1.0 if ttc == 0 else ttc
                 v = reward - ttc
-                rewards[self.key_indices[key], self.key_indices[entry_expanded]] = v
-
+                rewards[self.key_indices[key], self.key_indices[entry]] = v
         return rewards
 
     @staticmethod
@@ -227,11 +254,13 @@ class AttackGraph:
         elif distribution == "HardAndCertain":
             return expon.ppf(q=0.95, scale=1 / 0.1)
         elif distribution == "HardAndUncertain":
-            return AttackGraph.UNREACHABLE if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95, scale=1 / 0.1)
+            return AttackGraph.UNREACHABLE if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95,
+                                                                                                   scale=1 / 0.1)
         elif distribution == "VeryHardAndCertain":
             return expon.ppf(q=0.95, scale=1 / 0.01)
         elif distribution == "VeryHardAndUncertain":
-            return AttackGraph.UNREACHABLE if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95, scale=1 / 0.01)
+            return AttackGraph.UNREACHABLE if bernoulli.ppf(q=0.5, p=random()) == 0 else expon.ppf(q=0.95,
+                                                                                                   scale=1 / 0.01)
         elif distribution == "Enabled":
             return 0
         elif distribution == "Disabled":
