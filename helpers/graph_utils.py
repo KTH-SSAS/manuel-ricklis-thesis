@@ -23,17 +23,18 @@ def create_and_export_attack_graphs_for_learning(prefix: str, amount: int):
             }, f)
 
 
-def visualize_graph(file_name="graph_visualization"):
+def visualize_graph(file_name="graph_visualization", expand=False):
     """
     Generate a html with Pyvis for an interactive graph visualization
     """
-    attack_graph = AttackGraph()
+    attack_graph = AttackGraph(model=model_generator.getModel(), expand=expand)
     V, _ = attack_graph.value_iteration()
     net = Network(height='900px', width='75%', notebook=True)
 
     max_v = max(V)
     min_v = min(V)
-    for key, items in attack_graph.graph_expanded.items():
+    graph = attack_graph.graph_expanded if expand else attack_graph.graph
+    for key, items in graph.items():
         key_idx = attack_graph.key_indices[key]
         v = (V[key_idx] - min_v) / (max_v - min_v)
         color = colors.to_hex([v, 0.0, 1 - v])
