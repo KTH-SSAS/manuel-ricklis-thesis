@@ -1,6 +1,7 @@
 import json
 import inspect
 from statistics import NormalDist
+import random
 
 
 class Instance(object):
@@ -126,14 +127,20 @@ class ModelGenerator(object):
             self.model.append(network)
             IAMservice = Instance("Application", "IAM" + str(networks))
             self.model.append(IAMservice)
-            vulnerability = Instance("ManualHighImpactVulnerability", "Vulnerability")
+            vulnerability = Instance(
+                "ManualHighImpactVulnerabilityHighComplexity" if random.random() > 0.5
+                else "ManualHighImpactVulnerabilityLowComplexity",
+                "Vulnerability")
             self.model.append(vulnerability)
             self.add_applicationVulnerability(IAMservice, vulnerability)
             self.add_networkExposure(network, IAMservice)
             for services in range(1, number_of_services + 1):
                 service = Instance("Application", "Service" + str(services))
                 self.model.append(service)
-                vulnerability = Instance("ManualHighImpactVulnerability", "Vulnerability")
+                vulnerability = Instance(
+                    "ManualHighImpactVulnerabilityHighComplexity" if random.random() > 0.5
+                    else "ManualHighImpactVulnerabilityLowComplexity",
+                    "Vulnerability")
                 self.model.append(vulnerability)
                 self.add_applicationVulnerability(service, vulnerability)
                 if services in range(1, int((number_of_services + 1) / 2)):
@@ -197,10 +204,13 @@ class ModelGenerator(object):
             return
         # Getting fullAccess and specificAccess (after authenticate) from Netwrok connect
         instance_a.attack_steps["successfulAccess"].children["networkAccess"] = instance_b.attack_steps["networkAccess"]
-        instance_a.attack_steps["successfulAccess"].children = instance_b.attack_steps[
-            "specificAccessFromNetworkConnection"]
-        instance_a.attack_steps["successfulAccess"].children["networkConnect"] = instance_b.attack_steps["networkConnect"]
-        instance_a.attack_steps["successfulAccess"].children["networkRequestConnect"] = instance_b.attack_steps["networkRequestConnect"]
+        instance_a.attack_steps["successfulAccess"].children["specificAccessFromNetworkConnection"] = \
+            instance_b.attack_steps[
+                "specificAccessFromNetworkConnection"]
+        instance_a.attack_steps["successfulAccess"].children["networkConnect"] = instance_b.attack_steps[
+            "networkConnect"]
+        instance_a.attack_steps["successfulAccess"].children["networkRequestConnect"] = instance_b.attack_steps[
+            "networkRequestConnect"]
         instance_b.attack_steps["specificAccess"].children["access"] = instance_a.attack_steps["access"]
         instance_b.attack_steps["fullAccess"].children["access"] = instance_a.attack_steps["access"]
 
@@ -209,7 +219,8 @@ class ModelGenerator(object):
             print("ERROR: Wrong instances specified on '" + str(
                 inspect.currentframe().f_code.co_name) + "', returning...")
             return
-        instance_a.attack_steps["successfulAccess"].children["networkRespondConnect"] = instance_b.attack_steps["networkRespondConnect"]
+        instance_a.attack_steps["successfulAccess"].children["networkRespondConnect"] = instance_b.attack_steps[
+            "networkRespondConnect"]
         instance_b.attack_steps["specificAccess"].children["access"] = instance_a.attack_steps["access"]
         instance_b.attack_steps["fullAccess"].children["access"] = instance_a.attack_steps["access"]
 
@@ -228,7 +239,8 @@ class ModelGenerator(object):
             print("ERROR: Wrong instances specified on '" + str(
                 inspect.currentframe().f_code.co_name) + "', returning...")
             return
-        instance_a.attack_steps["assume"].children["attemptGainFullAccess"] = instance_b.attack_steps["attemptGainFullAccess"]
+        instance_a.attack_steps["assume"].children["attemptGainFullAccess"] = instance_b.attack_steps[
+            "attemptGainFullAccess"]
         instance_b.attack_steps["fullAccess"].children["assume"] = instance_a.attack_steps["assume"]
 
     def add_lowPrivilegeAccess(self, instance_a, instance_b):
@@ -236,7 +248,8 @@ class ModelGenerator(object):
             print("ERROR: Wrong instances specified on '" + str(
                 inspect.currentframe().f_code.co_name) + "', returning...")
             return
-        instance_a.attack_steps["assume"].children["individualPrivilegeAuthenticate"] = instance_b.attack_steps["individualPrivilegeAuthenticate"]
+        instance_a.attack_steps["assume"].children["individualPrivilegeAuthenticate"] = instance_b.attack_steps[
+            "individualPrivilegeAuthenticate"]
         instance_b.attack_steps["fullAccess"].children["assume"] = instance_a.attack_steps["assume"]
 
     def add_executionPrivilegeAccess(self, instance_a, instance_b):
@@ -260,7 +273,8 @@ class ModelGenerator(object):
             print("ERROR: Wrong instances specified on '" + str(
                 inspect.currentframe().f_code.co_name) + "', returning...")
             return
-        instance_a.attack_steps["assume"].children["specificAccessAuthenticate"] = instance_b.attack_steps["specificAccessAuthenticate"]
+        instance_a.attack_steps["assume"].children["specificAccessAuthenticate"] = instance_b.attack_steps[
+            "specificAccessAuthenticate"]
         instance_b.attack_steps["fullAccess"].children["assume"] = instance_a.attack_steps["assume"]
 
     def add_readPrivileges(self, instance_a, instance_b):
@@ -289,11 +303,13 @@ class ModelGenerator(object):
             print("ERROR: Wrong instances specified on '" + str(
                 inspect.currentframe().f_code.co_name) + "', returning...")
             return
-        instance_a.attack_steps["attemptUsePhysicalVulnerability"].children["impact"] = instance_b.attack_steps["impact"]
-        instance_b.attack_steps["impact"].children["bypassAccessControl"] = instance_a.attack_steps["bypassAccessControl"]
+        instance_a.attack_steps["attemptUsePhysicalVulnerability"].children["impact"] = instance_b.attack_steps[
+            "impact"]
+        instance_b.attack_steps["impact"].children["bypassAccessControl"] = instance_a.attack_steps[
+            "bypassAccessControl"]
 
     def add_applicationVulnerability(self, instance_a, instance_b):
-        if instance_a.type != "Application" or instance_b.type != "ManualHighImpactVulnerability":
+        if instance_a.type != "Application" or "ManualHighImpactVulnerability" not in instance_b.type:
             print("ERROR: Wrong instances specified on '" + str(
                 inspect.currentframe().f_code.co_name) + "', returning...")
             return
