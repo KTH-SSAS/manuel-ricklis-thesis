@@ -1,3 +1,4 @@
+import json
 import re
 
 import numpy as np
@@ -6,6 +7,7 @@ import torch
 import math
 
 from model_generator import model_generator
+from value_approximator.graph import attack_graph
 from value_approximator.graph.attack_graph import AttackGraph
 from helpers.constants import *
 
@@ -14,7 +16,13 @@ from helpers.constants import BINARIES_PATH
 
 def load_example_graph(number_of_features, embedding_vector_lengths):
     device = "cpu"
-    graph = AttackGraph(model=model_generator.getModel())
+    with open("AttackGraphs/default_graph_0_1.json", "r") as f:
+        dictionary = json.load(f)
+    graph = AttackGraph(
+        graph_expanded=dictionary["graph_expanded"],
+        key_indices=dictionary["key_indices"],
+        rewards=np.asarray(dictionary["rewards"])
+    )
 
     node_features, adjacency_list = parse_features(graph, number_of_features, embedding_vector_lengths)
     node_labels, _ = graph.value_iteration()
@@ -34,17 +42,16 @@ def parse_features(graph: AttackGraph, number_of_features, embedding_vector_leng
 
     # the node feature matrix
     M = torch.ones((N, embedding_vector_length + (number_of_features - 1)),
-                   dtype=torch.double) * (-999)
+                   dtype=torch.double)
 
     # the plan is to generate embeddings only after the graphs are generated, thus not for every parsing....
-    embeddings = nn.Embedding(len(graph.vocabulary), embedding_vector_length)
+    embeddings = nn.Embedding(len(attack_graph.vocabulary), embedding_vector_length)
 
     adjacency_matrix = {}
     for step, children in graph.graph_expanded.items():
         # build M using embeddings
         M[graph.key_indices[step], STEP:STEP + embedding_vector_length] = \
-            embeddings(torch.tensor(graph.vocabulary[step], dtype=torch.long))
-
+            embeddings(torch.tensor(attack_graph.vocabulary[step], dtype=torch.long))
         step_rewards = [reward for reward in graph.rewards[:, graph.key_indices[step]] if reward != -999]
         M[graph.key_indices[step], REWARD] = np.mean(step_rewards) if len(step_rewards) > 0 else -999
         M[graph.key_indices[step], RANK] = len(graph.graph_expanded[step])

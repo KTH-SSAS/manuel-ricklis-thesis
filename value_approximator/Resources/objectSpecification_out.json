@@ -530,17 +530,17 @@
     "attemptExploit": 0
   },
   "ManualLowImpactVulnerabilityHighComplexity": {
-    "impact": "Exponential(0.01)",
-    "lowImpact": "VeryHardAndUncertain"
+    "impact": 0,
+    "lowImpact": 0
   },
   "ManualLowImpactVulnerabilityLowComplexity": {
-    "impact": "Exponential(1.0)",
-    "lowImpact": "HardAndUncertain"
+    "impact": 0,
+    "lowImpact": 0
   },
   "ManualHighImpactVulnerabilityHighComplexity": {
-    "impact": "Exponential(0.01)"
+    "impact": 0
   },
   "ManualHighImpactVulnerabilityLowComplexity": {
-    "impact": "Exponential(1.0)"
+    "impact": 0
   }
 }

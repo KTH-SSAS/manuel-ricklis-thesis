@@ -105,8 +105,15 @@ class AttackStep(object):
 class ModelGenerator(object):
     # Supported assets (so far): System, Application, Network, Data, Identity, Vulnerability
     def __init__(self):
+        self.graph = {}
+        self.graph_and_parents = {}
         self.model = list()
-        return
+
+    def add_graph(self, graph):
+        self.graph = graph
+
+    def add_graph_and_parents(self, graph_and_parents):
+        self.graph_and_parents = graph_and_parents
 
     def generate_model_based_on_random_parameters(self, networks_mean, networks_sd, services_mean, services_sd,
                                                   data_mean, data_sd, id_data_mean, id_data_sd, service_id_mean,
