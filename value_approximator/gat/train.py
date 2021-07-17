@@ -1,22 +1,12 @@
 import argparse
-import json
 import time
 from glob import glob
 
-from sklearn.metrics import f1_score
 from sklearn.metrics import r2_score
-import torch
-import torch.nn as nn
 from torch.optim import Adam
 
-from helpers.constants import *
-
-from value_approximator.gat.gat import GAT
 from helpers.gat_utils import *
-
-
-# TODO: since we work with multiple graphs, implement the data loader à la PPI code
-#       each data loader returns train, val & test sets with (features, labels, edge_index) respectively
+from value_approximator.gat.gat import GAT
 
 
 def train_gat(config):
@@ -95,7 +85,6 @@ def train_gat(config):
 # Simple decorator function so that I don't have to pass arguments that don't change from epoch to epoch
 def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patience_period, time_start):
     # node_features shape = (N, FIN), edge_index shape = (2, E)
-    # graph_data = (node_features, edge_index)  # I pack data into tuples because gat uses nn.Sequential which requires it
 
     def get_graph_data(file_names: []):
         node_features = []
@@ -103,21 +92,24 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
         edge_index = []
         for file_name in file_names:
             with open(file_name, "r") as f:
-                graph = AttackGraph(import_dict=json.load(f))
-                _node_features, _adjacency_list = parse_features(graph, config['number_of_features'],
-                                                                config['embedding_vector_lengths'])
+                dictionary = json.load(f)
+                graph = AttackGraph(
+                    graph_expanded=dictionary["graph_expanded"],
+                    key_indices=dictionary["key_indices"],
+                    rewards=np.asarray(dictionary["rewards"])
+                )
+                _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES, 10)
                 _node_labels, _ = graph.value_iteration()
                 _topology = build_edge_index(_adjacency_list, len(_node_labels), False)
 
                 node_features.append(_node_features.clone().detach())
-                node_labels.append(torch.tensor(_node_labels, dtype=torch.long, device=config['device']))
+                node_labels.append(torch.tensor(_node_labels, dtype=torch.double, device=config['device']))
                 edge_index.append(torch.tensor(_topology, dtype=torch.long, device=config['device']))
 
         return torch.cat(node_features, 0), torch.cat(node_labels, 0), torch.cat(edge_index, 1)
 
     def main_loop(phase, epoch=0):
         global BEST_VAL_PERF, BEST_VAL_LOSS, PATIENCE_CNT, writer
-        graph_data_set = []
 
         # Certain modules behave differently depending on whether we're training the model or not.
         # e.g. nn.Dropout - we only want to drop model weights during the training.
@@ -140,7 +132,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
             # shape = (N, C) where N is the number of nodes in the split (train/val/test) and C is the number of classes
             nodes_unnormalized_scores = gat(graph_data)[0]
 
-            loss = loss_function(nodes_unnormalized_scores, gt_node_labels)
+            loss = loss_function(nodes_unnormalized_scores, gt_node_labels.unsqueeze(-1))
 
             if phase == LoopPhase.TRAIN:
                 optimizer.zero_grad()  # clean the trainable weights gradients in the computational graph (.grad fields)
@@ -148,7 +140,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                 optimizer.step()  # apply the gradients to weights
 
             # Calculate the main metric - accuracy
-            accuracy = r2_score(nodes_unnormalized_scores, gt_node_labels)
+            accuracy = r2_score(nodes_unnormalized_scores.detach().numpy(), gt_node_labels.detach().numpy())
 
             #
             # Logging
@@ -157,8 +149,9 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
             if phase == LoopPhase.TRAIN:
                 # Log metrics
                 if config['enable_tensorboard']:
-                    writer.add_scalar('training_loss', loss.item(), epoch)
-                    writer.add_scalar('training_acc', accuracy, epoch)
+                    print(f'loss={loss.item()}\naccuracy={accuracy}')
+                    # writer.add_scalar('training_loss', loss.item(), epoch)
+                    # writer.add_scalar('training_acc', accuracy, epoch)
 
                 # Save model checkpoint
                 if config['checkpoint_freq'] is not None and (epoch + 1) % config['checkpoint_freq'] == 0:
@@ -169,13 +162,14 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
             elif phase == LoopPhase.VAL:
                 # Log metrics
                 if config['enable_tensorboard']:
-                    writer.add_scalar('val_loss', loss.item(), epoch)
-                    writer.add_scalar('val_acc', accuracy, epoch)
+                    print(f'loss={loss.item()}\naccuracy={accuracy}')
+                    # writer.add_scalar('val_loss', loss.item(), epoch)
+                    # writer.add_scalar('val_acc', accuracy, epoch)
 
                 # Log to console
                 if config['console_log_freq'] is not None and epoch % config['console_log_freq'] == 0:
                     print(
-                        f'GAT training: time elapsed= {(time.time() - time_start):.2f} [s] | epoch={epoch + 1} | val acc={accuracy}')
+                        f'GAT training: time elapsed= {(time.time() - time_start):.2f} [s] | epoch={epoch + 1} | val acc={accuracy} | loss={loss.item()}')
 
                 # The "patience" logic - should we break out from the training loop? If either validation acc keeps going up
                 # or the val loss keeps going down we won't stop
@@ -199,6 +193,7 @@ def get_training_args():
     parser = argparse.ArgumentParser()
 
     # Training related
+    parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--num_of_epochs", type=int, help="number of training epochs", default=200)
     parser.add_argument("--patience_period", type=int,
                         help="number of epochs with no improvement on val before terminating", default=100)
@@ -214,7 +209,7 @@ def get_training_args():
     parser.add_argument("--should_visualize", action='store_true', help='should visualize the dataset? (no by default)')
 
     # Logging/debugging/checkpoint related (helps a lot with experimentation)
-    parser.add_argument("--enable_tensorboard", action='store_true', help="enable tensorboard logging (no by default)")
+    parser.add_argument("--enable_tensorboard", action='store_true', help="enable tensorboard logging (no by default)", default=True)
     parser.add_argument("--console_log_freq", type=int, help="log to output console (batch) freq (None for no logging)",
                         default=10)
     parser.add_argument("--checkpoint_freq", type=int,
@@ -227,7 +222,7 @@ def get_training_args():
         # GNNs, contrary to CNNs, are often shallow (it ultimately depends on the graph properties)
         "num_of_layers": 3,
         "num_heads_per_layer": [4, 4, 6],
-        "num_features_per_layer": [NUM_INPUT_FEATURES, 256, 256, 1],
+        "num_features_per_layer": [12, 256, 256, 1],
         "add_skip_connection": True,
         "bias": True,
         "dropout": 0.0
