@@ -57,8 +57,7 @@ def create_single_graph(node):
 def create_and_export_attack_graphs_for_learning(prefix: str, amount: int):
     generator = ModelGenerator()
     for i in range(amount):
-        # generator.model = generator.generate_model_based_on_random_parameters(5, 2, 8, 4, 5, 1, 3, 1, 4, 2)
-        generator.model = generator.generate_model()
+        generator.model = generator.generate_model_based_on_random_parameters(4, 2, 8, 4, 5, 1, 3, 1, 4, 2)
         attack_graphs = create_attack_graphs_from_model(generator)
 
         for j, graph in enumerate(attack_graphs):

@@ -103,7 +103,6 @@ def get_training_state(training_config, model):
         "add_skip_connection": training_config['add_skip_connection'],
         "bias": training_config['bias'],
         "dropout": training_config['dropout'],
-        "layer_type": training_config['layer_type'].name,
 
         # Model state
         "state_dict": model.state_dict()
