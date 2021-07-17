@@ -36,21 +36,18 @@ def load_example_graph(number_of_features, embedding_vector_lengths):
     return node_features, node_labels, topology
 
 
-def parse_features(graph: AttackGraph, number_of_features, embedding_vector_length: int):
+def parse_features(graph: AttackGraph, number_of_features, embeddings: nn.Embedding):
     # features: (step name, asset type, asset name), reward, neighbourhood rank
     N = len(graph.graph_expanded)
 
     # the node feature matrix
-    M = torch.ones((N, embedding_vector_length + (number_of_features - 1)),
+    M = torch.ones((N, embeddings.embedding_dim + (number_of_features - 1)),
                    dtype=torch.double)
-
-    # the plan is to generate embeddings only after the graphs are generated, thus not for every parsing....
-    embeddings = nn.Embedding(len(attack_graph.vocabulary), embedding_vector_length)
 
     adjacency_matrix = {}
     for step, children in graph.graph_expanded.items():
         # build M using embeddings
-        M[graph.key_indices[step], STEP:STEP + embedding_vector_length] = \
+        M[graph.key_indices[step], STEP:STEP + embeddings.embedding_dim] = \
             embeddings(torch.tensor(attack_graph.vocabulary[step], dtype=torch.long))
         step_rewards = [reward for reward in graph.rewards[:, graph.key_indices[step]] if reward != -999]
         M[graph.key_indices[step], REWARD] = np.mean(step_rewards) if len(step_rewards) > 0 else -999
