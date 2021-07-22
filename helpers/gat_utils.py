@@ -14,8 +14,7 @@ from helpers.constants import *
 from helpers.constants import BINARIES_PATH
 
 
-def load_example_graph(number_of_features, embedding_vector_lengths):
-    device = "cpu"
+def load_example_graph(number_of_features, device="cuda"):
     with open("AttackGraphs/default_graph_0_1.json", "r") as f:
         dictionary = json.load(f)
     graph = AttackGraph(
@@ -99,6 +98,7 @@ def get_training_state(training_config, model):
         "dataset_name": training_config['dataset_name'],
         "num_of_epochs": training_config['num_of_epochs'],
         "test_perf": training_config['test_perf'],
+        "device": training_config['device'],
 
         # Model structure
         "num_of_layers": training_config['num_of_layers'],
