@@ -1,0 +1,573 @@
+{
+  "asset_names": {
+    "Network": [
+      "Network"
+    ],
+    "Application": [
+      "Service",
+      "IAM"
+    ],
+    "ManualHighImpactVulnerabilityLowComplexity": [
+      "Vulnerability"
+    ],
+    "ManualHighImpactVulnerabilityHighComplexity": [
+      "Vulnerability"
+    ],
+    "Data": [
+      "Data",
+      "IdData",
+      "IdDataIdData"
+    ],
+    "Identity": [
+      "HighPrivIdSrvcService",
+      "LowPrivIdSrvcService",
+      "AdminId",
+      "Executor"
+    ]
+  },
+  "step_names": {
+    "Object": [
+      "attemptUseVulnerability",
+      "deny",
+      "bypassAccessControl"
+    ],
+    "System": [
+      "attemptUseVulnerability",
+      "deny",
+      "bypassAccessControl",
+      "connect",
+      "attemptConnect",
+      "attemptUsePhysicalVulnerability",
+      "allPrivilegeAuthenticate",
+      "individualPrivilegeAuthenticate",
+      "attemptGainFullAccess",
+      "fullAccess",
+      "specificAccess",
+      "physicalAccess",
+      "hardwareModificationsProtection"
+    ],
+    "SoftwareProduct": [
+      "compromiseApplication",
+      "readApplication",
+      "modifyApplication",
+      "denyApplication"
+    ],
+    "Application": [
+      "attemptUseVulnerability",
+      "deny",
+      "bypassAccessControl",
+      "disabled",
+      "localConnect",
+      "useVulnerability",
+      "attemptLocalConnectVuln",
+      "attemptNetworkRequestRespondConnectVuln",
+      "attemptLocalLowPrivVuln",
+      "attemptLocalHighPrivVuln",
+      "networkConnect",
+      "accessNetworkAndConnections",
+      "networkRequestConnect",
+      "networkRespondConnect",
+      "specificAccessFromLocalConnection",
+      "specificAccessFromNetworkConnection",
+      "specificAccess",
+      "attemptLocalConnectVulnOnHost",
+      "authenticate",
+      "specificAccessAuthenticate",
+      "localAccess",
+      "networkAccess",
+      "fullAccess",
+      "attemptFullAccessAfterSoftProdVulnerability",
+      "attemptReadAfterSoftProdVulnerability",
+      "attemptModifyAfterSoftProdVulnerability",
+      "attemptDenyAfterSoftProdVulnerability",
+      "fullAccessAfterSoftProdVulnerability",
+      "readAfterSoftProdVulnerability",
+      "modifyAfterSoftProdVulnerability",
+      "denyAfterSoftProdVulnerability",
+      "attemptApplicationRespondConnectThroughData",
+      "codeExecutionAfterVulnerability",
+      "read",
+      "modify",
+      "denyFromConnectionRule"
+    ],
+    "PhysicalZone": [
+      "gainPhysicalAccess"
+    ],
+    "Information": [
+      "attemptAccess"
+    ],
+    "Data": [
+      "attemptAccess",
+      "attemptAccessFromIdentity",
+      "access",
+      "authenticated",
+      "accessUnencryptedData",
+      "accessDecryptedData",
+      "dataNotPresent",
+      "readContainedInformation",
+      "attemptApplicationRespondConnect",
+      "applicationRespondConnect",
+      "attemptRead",
+      "identityAttemptRead",
+      "identityRead",
+      "attemptWrite",
+      "identityAttemptWrite",
+      "identityWrite",
+      "attemptDelete",
+      "identityAttemptDelete",
+      "identityDelete",
+      "read",
+      "write",
+      "delete",
+      "attemptDeny",
+      "deny",
+      "attemptEavesdrop",
+      "attemptManInTheMiddle",
+      "eavesdrop",
+      "manInTheMiddle",
+      "compromiseAppOrigin"
+    ],
+    "Identity": [
+      "twoFactorAuthentication",
+      "disabled",
+      "attemptAssume",
+      "successfulAssume",
+      "attemptAssumeAfter2FA",
+      "successfulAssumeAfter2FA",
+      "assume"
+    ],
+    "Privileges": [
+      "disabled",
+      "attemptAssume",
+      "assume"
+    ],
+    "Group": [
+      "compromiseGroup"
+    ],
+    "Credentials": [
+      "attemptAccess",
+      "notDisclosed",
+      "useLeakedCredentials",
+      "use",
+      "credentialTheft"
+    ],
+    "User": [
+      "noPasswordReuse",
+      "oneCredentialCompromised",
+      "passwordReuseCompromise",
+      "attemptSocialEngineering",
+      "attemptCredentialTheft",
+      "credentialTheft",
+      "attemptReverseTakeover",
+      "reverseTakeover",
+      "phishUser",
+      "attemptSteal2FAtoken",
+      "steal2FAtoken",
+      "compromise"
+    ],
+    "Network": [
+      "physicalAccess",
+      "networkAccessControl",
+      "bypassAccessControl",
+      "attemptAccess",
+      "access",
+      "successfulAccess",
+      "networkForwarding",
+      "denialOfService",
+      "accessNetworkData",
+      "eavesdropDefense",
+      "manInTheMiddleDefense",
+      "eavesdrop",
+      "bypassEavesdropProtection",
+      "manInTheMiddle",
+      "bypassMitMProtection",
+      "eavesdropAfterPhysicalAccess"
+    ],
+    "RoutingFirewall": [
+      "attemptUseVulnerability",
+      "deny",
+      "bypassAccessControl",
+      "disabled",
+      "localConnect",
+      "useVulnerability",
+      "attemptLocalConnectVuln",
+      "attemptNetworkRequestRespondConnectVuln",
+      "attemptLocalLowPrivVuln",
+      "attemptLocalHighPrivVuln",
+      "networkConnect",
+      "accessNetworkAndConnections",
+      "networkRequestConnect",
+      "networkRespondConnect",
+      "specificAccessFromLocalConnection",
+      "specificAccessFromNetworkConnection",
+      "specificAccess",
+      "attemptLocalConnectVulnOnHost",
+      "authenticate",
+      "specificAccessAuthenticate",
+      "localAccess",
+      "networkAccess",
+      "fullAccess",
+      "attemptFullAccessAfterSoftProdVulnerability",
+      "attemptReadAfterSoftProdVulnerability",
+      "attemptModifyAfterSoftProdVulnerability",
+      "attemptDenyAfterSoftProdVulnerability",
+      "fullAccessAfterSoftProdVulnerability",
+      "readAfterSoftProdVulnerability",
+      "modifyAfterSoftProdVulnerability",
+      "denyAfterSoftProdVulnerability",
+      "attemptApplicationRespondConnectThroughData",
+      "codeExecutionAfterVulnerability",
+      "read",
+      "modify",
+      "denyFromConnectionRule",
+      "denialOfService"
+    ],
+    "ConnectionRule": [
+      "disabled",
+      "filtered",
+      "attemptAccessNetworks",
+      "accessNetworks",
+      "attemptConnectToApplications",
+      "connectToApplications",
+      "attemptTransmitResponse",
+      "transmitResponse",
+      "attemptTransmit",
+      "transmit",
+      "attemptDenialOfService",
+      "denialOfService",
+      "attemptEavesdropOnDataInTransit",
+      "eavedropOnDataInTransit",
+      "attemptManInTheMiddleOnDataInTransit",
+      "mainInTheMiddleOnDataInTransit"
+    ],
+    "AutomaticLowComplexityVulnerability": [
+      "abuse"
+    ],
+    "AutomaticHighComplexityVulnerability": [
+      "abuse"
+    ],
+    "LLNNVulnerability": [
+      "abuse"
+    ],
+    "LLNRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "LLLNVulnerability": [
+      "abuse"
+    ],
+    "LLLRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "LLHNVulnerability": [
+      "abuse"
+    ],
+    "LLHRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "NLNNVulnerability": [
+      "abuse"
+    ],
+    "NLNRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "NLLNVulnerability": [
+      "abuse"
+    ],
+    "NLLRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "NLHNVulnerability": [
+      "abuse"
+    ],
+    "NLHRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "LHNNVulnerability": [
+      "abuse"
+    ],
+    "LHNRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "LHLNVulnerability": [
+      "abuse"
+    ],
+    "LHLRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "LHHNVulnerability": [
+      "abuse"
+    ],
+    "LHHRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "NHNNVulnerability": [
+      "abuse"
+    ],
+    "NHNRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "NHLNVulnerability": [
+      "abuse"
+    ],
+    "NHLRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "NHHNVulnerability": [
+      "abuse"
+    ],
+    "NHHRVulnerability": [
+      "abuse",
+      "userInteracts"
+    ],
+    "AutomaticExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact"
+    ],
+    "HHHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact"
+    ],
+    "HHLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "HHNExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact"
+    ],
+    "HLHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "HLLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "HLNExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "HNHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact"
+    ],
+    "HNLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "HNNExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact"
+    ],
+    "LHHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "LHLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "LHNExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "LLHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "LLLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "LLNExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "LNHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "LNLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "LNNExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "NHHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact"
+    ],
+    "NHLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "NHNExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact"
+    ],
+    "NLHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "NLLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "NLNExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "NNHExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact"
+    ],
+    "NNLExploit": [
+      "attemptExploit",
+      "denyImpact",
+      "readImpact",
+      "modifyImpact",
+      "impact",
+      "lowImpact"
+    ],
+    "ManuallyModeledVulnerability": [
+      "userInteracts"
+    ],
+    "ManualLowImpactVulnerability": [
+      "userInteracts",
+      "impact",
+      "lowImpact"
+    ],
+    "ManualHighImpactVulnerability": [
+      "userInteracts",
+      "impact"
+    ],
+    "ManualHighComplexityExploit": [
+      "attemptExploit"
+    ],
+    "ManualLowComplexityExploit": [
+      "attemptExploit"
+    ],
+    "ManualLowImpactVulnerabilityHighComplexity": [
+      "impact",
+      "lowImpact"
+    ],
+    "ManualLowImpactVulnerabilityLowComplexity": [
+      "impact",
+      "lowImpact"
+    ],
+    "ManualHighImpactVulnerabilityHighComplexity": [
+      "impact"
+    ],
+    "ManualHighImpactVulnerabilityLowComplexity": [
+      "impact"
+    ]
+  }
+}

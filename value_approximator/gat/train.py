@@ -12,8 +12,7 @@ from value_approximator.gat.gat import GAT
 def train_gat(config):
     global BEST_VAL_PERF, BEST_VAL_LOSS
 
-    # I've added the option to force the use of CPU even though you have a GPU on your system (but it's too weak).
-    device = torch.device("cuda" if torch.cuda.is_available() and not config['force_cpu'] else "cpu")
+    device = config["device"]
 
     # Step 1: get available graph data sets
     graph_data_sets = [
@@ -37,9 +36,6 @@ def train_gat(config):
     loss_fn = nn.MSELoss(reduction='mean')
     optimizer = Adam(gat.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
 
-    # TODO: if embedding exists saved as file, load it automatically from there
-    embeddings = nn.Embedding(len(attack_graph.vocabulary), config['embedding_vector_length'])
-
     # The decorator function makes things cleaner since there is a lot of redundancy between the train and val loops
     main_loop = get_main_loop(
         graph_data_sets=graph_data_sets,
@@ -48,8 +44,7 @@ def train_gat(config):
         loss_function=loss_fn,
         optimizer=optimizer,
         patience_period=config['patience_period'],
-        time_start=time.time(),
-        embeddings=embeddings
+        time_start=time.time()
     )
 
     BEST_VAL_PERF, BEST_VAL_LOSS, PATIENCE_CNT = [0, 0, 0]  # reset vars used for early stopping
@@ -57,12 +52,12 @@ def train_gat(config):
     # Step 4: Start the training procedure
     for epoch in range(config['num_of_epochs']):
         # Training loop
-        main_loop(phase=LoopPhase.TRAIN, epoch=epoch)
+        main_loop(phase=LoopPhase.TRAIN, epoch=epoch, device=device)
 
         # Validation loop
         with torch.no_grad():
             try:
-                main_loop(phase=LoopPhase.VAL, epoch=epoch)
+                main_loop(phase=LoopPhase.VAL, epoch=epoch, device=device)
             except Exception as e:  # "patience has run out" exception :O
                 print(str(e))
                 break  # break out from the training loop
@@ -71,7 +66,7 @@ def train_gat(config):
     # Don't overfit to the test dataset - only when you've fine-tuned your model on the validation dataset should you
     # report your final loss and micro-F1 on the test dataset. Friends don't let friends overfit to the test data. <3
     if config['should_test']:
-        micro_f1 = main_loop(phase=LoopPhase.TEST)
+        micro_f1 = main_loop(phase=LoopPhase.TEST, device=device)
         config['test_perf'] = micro_f1
 
         print('*' * 50)
@@ -87,10 +82,10 @@ def train_gat(config):
 
 
 # Simple decorator function so that I don't have to pass arguments that don't change from epoch to epoch
-def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patience_period, time_start, embeddings):
+def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patience_period, time_start):
     # node_features shape = (N, FIN), edge_index shape = (2, E)
 
-    def get_graph_data(file_names: []):
+    def get_graph_data(file_names: [], device="cuda"):
         node_features = []
         node_labels = []
         edge_index = []
@@ -102,36 +97,33 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                     key_indices=dictionary["key_indices"],
                     rewards=np.asarray(dictionary["rewards"])
                 )
-                _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES, embeddings)
+                _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES)
                 _node_labels, _ = graph.value_iteration()
                 _topology = build_edge_index(_adjacency_list, len(_node_labels), False)
 
                 node_features.append(_node_features.clone().detach())
-                node_labels.append(torch.tensor(_node_labels, dtype=torch.double, device=config['device']))
-                edge_index.append(torch.tensor(_topology, dtype=torch.long, device=config['device']))
+                node_labels.append(torch.tensor(_node_labels, dtype=torch.double, device=device))
+                edge_index.append(torch.tensor(_topology, dtype=torch.long, device=device))
 
         return torch.cat(node_features, 0), torch.cat(node_labels, 0), torch.cat(edge_index, 1)
 
-    def main_loop(phase, epoch=0):
+    def main_loop(phase, device="cuda", epoch=0):
         global BEST_VAL_PERF, BEST_VAL_LOSS, PATIENCE_CNT
 
         # Certain modules behave differently depending on whether we're training the model or not.
         # e.g. nn.Dropout - we only want to drop model weights during the training.
         if phase == LoopPhase.TRAIN:
             gat.train()
-            embeddings.train()
             graph_data_set = graph_data_sets[0]
         elif phase == LoopPhase.VAL:
             gat.eval()
-            embeddings.eval()
             graph_data_set = graph_data_sets[1]
         else:
             gat.eval()
-            embeddings.eval()
             graph_data_set = graph_data_sets[2]
 
         for i in range(0, len(graph_data_set) - 1, 2):
-            node_features, gt_node_labels, edge_index = get_graph_data(graph_data_set[i:i + 1])
+            node_features, gt_node_labels, edge_index = get_graph_data(graph_data_set[i:i + 1], device=device)
             graph_data = (node_features, edge_index)
 
             # Do a forwards pass and extract only the relevant node scores (train/val or test ones)
@@ -145,7 +137,6 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                 optimizer.zero_grad()  # clean the trainable weights gradients in the computational graph (.grad fields)
                 loss.backward()  # compute the gradients for every trainable weight in the computational graph
                 optimizer.step()  # apply the gradients to weights
-                embeddings.zero_grad()
 
 
             # Calculate the main metric - accuracy
@@ -202,7 +193,7 @@ def get_training_args():
     parser = argparse.ArgumentParser()
 
     # Training related
-    parser.add_argument("--device", type=str, default="cpu")
+    parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--num_of_epochs", type=int, help="number of training epochs", default=200)
     parser.add_argument("--patience_period", type=int,
                         help="number of epochs with no improvement on val before terminating", default=100)
@@ -231,11 +222,11 @@ def get_training_args():
         # GNNs, contrary to CNNs, are often shallow (it ultimately depends on the graph properties)
         "num_of_layers": 3,
         "num_heads_per_layer": [4, 4, 6],
-        "num_features_per_layer": [12, 256, 256, 1],
-        "embedding_vector_length": 10,
+        "num_features_per_layer": [len(attack_graph.vocabulary) + NUM_INPUT_FEATURES - 1, 256, 256, 1],
         "add_skip_connection": True,
         "bias": True,
-        "dropout": 0.0
+        "dropout": 0.0,
+        "device": "cpu"
     }
 
     # Wrapping training configuration into a dictionary

@@ -33,8 +33,24 @@ class AttackGraph:
 
 UNREACHABLE = 1000000
 object_dict, ttc_dict = read_object_specifications()
-with open("value_approximator/Resources/vocabulary.json", "r") as f:
-    vocabulary = json.load(f)
+# with open("value_approximator/Resources/vocabulary.json", "r") as f:
+#     vocabulary = json.load(f)
+
+with open("value_approximator/Resources/Mappings/assets_and_steps.json") as f:
+    dictionary = json.load(f)
+    full_list = []
+
+    for asset, names in dictionary["asset_names"].items():
+        if len(names) > 1:
+            for name in names:
+                steps = dictionary["step_names"][asset]
+                for step in steps:
+                    full_list.append(f'{asset}.{name}.{step}')
+        else:
+            steps = dictionary["step_names"][asset]
+            for step in steps:
+                full_list.append(f'{asset}.{names[0]}.{step}')
+    vocabulary = {i: c for c, i in enumerate(full_list)}
 
 
 def concatenate_model_instances(model: ModelGenerator):
@@ -230,12 +246,12 @@ def get_entry(parent, child):
             return c
 
 
-def update_vocabulary(graph: dict):
-    # continue the counting from the last entry in the vocabulary if not empty
-    counter = 0 if len(vocabulary) == 0 else list(vocabulary.items())[1][-1] + 1
-    for key in graph:
-        if key not in vocabulary:
-            vocabulary[key] = counter
-            counter += 1
-    with open("value_approximator/Resources/vocabulary.json", "w") as vocab:
-        json.dump(vocabulary, vocab)
+# def update_vocabulary(graph: dict):
+#     # continue the counting from the last entry in the vocabulary if not empty
+#     counter = 0 if len(vocabulary) == 0 else list(vocabulary.items())[1][-1] + 1
+#     for key in graph:
+#         if key not in vocabulary:
+#             vocabulary[key] = counter
+#             counter += 1
+#     with open("value_approximator/Resources/vocabulary.json", "w") as vocab:
+#         json.dump(vocabulary, vocab)

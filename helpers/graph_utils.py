@@ -30,7 +30,7 @@ def create_attack_graphs_from_model(model: ModelGenerator, min_graph_size=100) -
 
         key_indices = dict(zip(graph_expanded.keys(), [i for i in range(len(graph_expanded))]))
         rewards = attack_graph.build_rewards(key_indices=key_indices, graph_expanded=graph_expanded)
-        attack_graph.update_vocabulary(graph_expanded)
+        # attack_graph.update_vocabulary(graph_expanded)
 
         attack_graphs.append(
             AttackGraph(graph_expanded, key_indices, rewards)
