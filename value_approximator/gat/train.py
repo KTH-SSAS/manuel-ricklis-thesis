@@ -37,9 +37,6 @@ def train_gat(config):
     loss_fn = nn.MSELoss(reduction='mean')
     optimizer = Adam(gat.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
 
-    # TODO: if embedding exists saved as file, load it automatically from there
-    embeddings = nn.Embedding(len(attack_graph.vocabulary), config['embedding_vector_length'])
-
     # The decorator function makes things cleaner since there is a lot of redundancy between the train and val loops
     main_loop = get_main_loop(
         graph_data_sets=graph_data_sets,
@@ -48,8 +45,7 @@ def train_gat(config):
         loss_function=loss_fn,
         optimizer=optimizer,
         patience_period=config['patience_period'],
-        time_start=time.time(),
-        embeddings=embeddings
+        time_start=time.time()
     )
 
     BEST_VAL_PERF, BEST_VAL_LOSS, PATIENCE_CNT = [0, 0, 0]  # reset vars used for early stopping
@@ -87,7 +83,7 @@ def train_gat(config):
 
 
 # Simple decorator function so that I don't have to pass arguments that don't change from epoch to epoch
-def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patience_period, time_start, embeddings):
+def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patience_period, time_start):
     # node_features shape = (N, FIN), edge_index shape = (2, E)
 
     def get_graph_data(file_names: []):
@@ -102,7 +98,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                     key_indices=dictionary["key_indices"],
                     rewards=np.asarray(dictionary["rewards"])
                 )
-                _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES, embeddings)
+                _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES)
                 _node_labels, _ = graph.value_iteration()
                 _topology = build_edge_index(_adjacency_list, len(_node_labels), False)
 
@@ -119,15 +115,12 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
         # e.g. nn.Dropout - we only want to drop model weights during the training.
         if phase == LoopPhase.TRAIN:
             gat.train()
-            embeddings.train()
             graph_data_set = graph_data_sets[0]
         elif phase == LoopPhase.VAL:
             gat.eval()
-            embeddings.eval()
             graph_data_set = graph_data_sets[1]
         else:
             gat.eval()
-            embeddings.eval()
             graph_data_set = graph_data_sets[2]
 
         for i in range(0, len(graph_data_set) - 1, 2):
@@ -145,7 +138,6 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                 optimizer.zero_grad()  # clean the trainable weights gradients in the computational graph (.grad fields)
                 loss.backward()  # compute the gradients for every trainable weight in the computational graph
                 optimizer.step()  # apply the gradients to weights
-                embeddings.zero_grad()
 
 
             # Calculate the main metric - accuracy
@@ -231,8 +223,7 @@ def get_training_args():
         # GNNs, contrary to CNNs, are often shallow (it ultimately depends on the graph properties)
         "num_of_layers": 3,
         "num_heads_per_layer": [4, 4, 6],
-        "num_features_per_layer": [12, 256, 256, 1],
-        "embedding_vector_length": 10,
+        "num_features_per_layer": [len(attack_graph.vocabulary) + NUM_INPUT_FEATURES - 1, 256, 256, 1],
         "add_skip_connection": True,
         "bias": True,
         "dropout": 0.0
