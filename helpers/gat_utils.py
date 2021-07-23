@@ -2,11 +2,7 @@ import json
 import re
 
 import numpy as np
-import torch.nn as nn
 import torch
-import math
-
-from model_generator import model_generator
 from value_approximator.graph import attack_graph
 from value_approximator.graph.attack_graph import AttackGraph
 from helpers.constants import *
@@ -23,7 +19,7 @@ def load_example_graph(number_of_features, device="cuda"):
         rewards=np.asarray(dictionary["rewards"])
     )
 
-    node_features, adjacency_list = parse_features(graph, number_of_features)
+    node_features, adjacency_list = parse_features(graph, number_of_features, device)
     node_labels, _ = graph.value_iteration()
 
     topology = build_edge_index(adjacency_list, len(node_labels), False)
@@ -35,17 +31,17 @@ def load_example_graph(number_of_features, device="cuda"):
     return node_features, node_labels, topology
 
 
-def parse_features(graph: AttackGraph, number_of_features):
+def parse_features(graph: AttackGraph, number_of_features, device):
     # features: (step name, asset type, asset name), reward, neighbourhood rank
     N = len(graph.graph_expanded)
 
     # the node feature matrix
-    M = torch.ones((N, len(attack_graph.vocabulary) + (number_of_features - 1)), dtype=torch.double)
+    M = torch.ones((N, len(attack_graph.vocabulary) + (number_of_features - 1)), dtype=torch.double, device=device)
 
     adjacency_matrix = {}
     for step, children in graph.graph_expanded.items():
         # build M using embeddings
-        M[graph.key_indices[step], STEP:STEP + len(attack_graph.vocabulary)] = get_feature_vector_from_expanded_node_name(step)
+        M[graph.key_indices[step], STEP:STEP + len(attack_graph.vocabulary)] = get_feature_vector_from_expanded_node_name(step, device)
         step_rewards = [reward for reward in graph.rewards[:, graph.key_indices[step]] if reward != -999]
         M[graph.key_indices[step], REWARD] = np.mean(step_rewards) if len(step_rewards) > 0 else -999
         M[graph.key_indices[step], RANK] = len(graph.graph_expanded[step])
@@ -59,8 +55,8 @@ def parse_features(graph: AttackGraph, number_of_features):
     return M, adjacency_matrix
 
 
-def get_feature_vector_from_expanded_node_name(name_expanded: str) -> torch.tensor:
-    vector = torch.zeros(len(attack_graph.vocabulary))
+def get_feature_vector_from_expanded_node_name(name_expanded: str, device) -> torch.tensor:
+    vector = torch.zeros(len(attack_graph.vocabulary), device=device)
     for _name in name_expanded.split("|"):
         name = ''.join([i for i in _name if not i.isdigit()])
         vector[attack_graph.vocabulary[name]] += 1
