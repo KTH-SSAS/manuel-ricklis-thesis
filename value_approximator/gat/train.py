@@ -3,14 +3,25 @@ import time
 from glob import glob
 
 from sklearn.metrics import r2_score
+from torch import nn
 from torch.optim import Adam
 
 from helpers.gat_utils import *
 from value_approximator.gat.gat import GAT
 
+import matplotlib
+
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 
 def train_gat(config):
     global BEST_VAL_PERF, BEST_VAL_LOSS
+    global accuracies, losses
+    accuracies = []
+    losses = []
+
+    plt.interactive(False)
 
     device = config["device"]
 
@@ -132,15 +143,16 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
             nodes_unnormalized_scores = gat(graph_data)[0]
 
             loss = loss_function(nodes_unnormalized_scores, gt_node_labels.unsqueeze(-1))
+            losses.append(loss.item())
 
             if phase == LoopPhase.TRAIN:
                 optimizer.zero_grad()  # clean the trainable weights gradients in the computational graph (.grad fields)
                 loss.backward()  # compute the gradients for every trainable weight in the computational graph
                 optimizer.step()  # apply the gradients to weights
 
-
             # Calculate the main metric - accuracy
             accuracy = r2_score(nodes_unnormalized_scores.detach().numpy(), gt_node_labels.detach().numpy())
+            accuracies.append(accuracy)
 
             #
             # Logging
@@ -155,7 +167,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
 
                 # Save model checkpoint
                 if config['checkpoint_freq'] is not None and (epoch + 1) % config['checkpoint_freq'] == 0:
-                    ckpt_model_name = f'gat_{config["dataset_name"]}_ckpt_epoch_{epoch + 1}.pth'
+                    ckpt_model_name = f'gat_{config["dataset_name"]}{epoch + 1}.pth'
                     config['test_perf'] = -1
                     torch.save(get_training_state(config, gat), os.path.join(CHECKPOINTS_PATH, ckpt_model_name))
 
@@ -166,10 +178,27 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                     # writer.add_scalar('val_loss', loss.item(), epoch)
                     # writer.add_scalar('val_acc', accuracy, epoch)
 
+
                 # Log to console
                 if config['console_log_freq'] is not None and epoch % config['console_log_freq'] == 0:
-                    print(
-                        f'GAT training: time elapsed= {(time.time() - time_start):.2f} [s] | epoch={epoch + 1} | val acc={accuracy} | loss={loss.item()}')
+                    print(f'GAT training: time elapsed= '
+                          f'{(time.time() - time_start):.2f} [s] | '
+                          f'epoch={epoch + 1} | '
+                          f'val acc={accuracy} | '
+                          f'loss={loss.item()}')
+                    #
+                    # Plotting
+                    #
+
+                    fig, axs = plt.subplots(2)
+                    axs[0].set_yscale("log")
+                    axs[0].plot(losses)
+
+                    axs[1].set_ylim([-10, 1])
+                    axs[1].plot(accuracies)
+
+                    plt.savefig("loss_accuracy_plots.png")
+                    plt.close(fig)
 
                 # The "patience" logic - should we break out from the training loop? If either validation acc keeps going up
                 # or the val loss keeps going down we won't stop
@@ -209,7 +238,8 @@ def get_training_args():
     parser.add_argument("--should_visualize", action='store_true', help='should visualize the dataset? (no by default)')
 
     # Logging/debugging/checkpoint related (helps a lot with experimentation)
-    parser.add_argument("--enable_tensorboard", action='store_true', help="enable tensorboard logging (no by default)", default=True)
+    parser.add_argument("--enable_tensorboard", action='store_true', help="enable tensorboard logging (yes by default)",
+                        default=True)
     parser.add_argument("--console_log_freq", type=int, help="log to output console (batch) freq (None for no logging)",
                         default=10)
     parser.add_argument("--checkpoint_freq", type=int,

@@ -1,6 +1,7 @@
 import json
 import inspect
 from statistics import NormalDist
+from scipy.stats import norm
 import random
 
 
@@ -118,11 +119,11 @@ class ModelGenerator(object):
     def generate_model_based_on_random_parameters(self, networks_mean, networks_sd, services_mean, services_sd,
                                                   data_mean, data_sd, id_data_mean, id_data_sd, service_id_mean,
                                                   service_id_sd):
-        number_of_networks = int(NormalDist(mu=networks_mean, sigma=networks_sd).inv_cdf(0.95))
-        number_of_services = int(NormalDist(mu=services_mean, sigma=services_sd).inv_cdf(0.95))
-        number_of_data_per_service = int(NormalDist(mu=data_mean, sigma=data_sd).inv_cdf(0.95))
-        number_of_data_per_identity = int(NormalDist(mu=id_data_mean, sigma=id_data_sd).inv_cdf(0.95))
-        number_of_identities_per_service = int(NormalDist(mu=service_id_mean, sigma=service_id_sd).inv_cdf(0.95))
+        number_of_networks = int(norm.ppf(random.randint(10, 95) / 100, loc=networks_mean, scale=networks_sd))
+        number_of_services = int(norm.ppf(random.randint(10, 95) / 100, loc=services_mean, scale=services_sd))
+        number_of_data_per_service = int(norm.ppf(random.randint(10, 95) / 100, loc=data_mean, scale=data_sd))
+        number_of_data_per_identity = int(norm.ppf(random.randint(10, 95) / 100, loc=id_data_mean, scale=id_data_sd))
+        number_of_identities_per_service = int(norm.ppf(random.randint(10, 95) / 100, loc=service_id_mean, scale=service_id_sd))
 
         return self.generate_model(number_of_networks, number_of_services, number_of_data_per_service,
                                    number_of_data_per_identity, number_of_identities_per_service)
