@@ -3,13 +3,15 @@ import json
 from matplotlib import colors
 from pyvis.network import Network
 
+from typing import List
+
 from model_generator import model_generator
 from model_generator.model_generator import ModelGenerator
 from value_approximator.graph import attack_graph
 from value_approximator.graph.attack_graph import AttackGraph as AttackGraph
 
 
-def create_attack_graphs_from_model(model: ModelGenerator, min_graph_size=100) -> list[AttackGraph]:
+def create_attack_graphs_from_model(model: ModelGenerator, min_graph_size=100) -> List[AttackGraph]:
     graph = attack_graph.concatenate_model_instances(model)
     model.add_graph(graph)
 
