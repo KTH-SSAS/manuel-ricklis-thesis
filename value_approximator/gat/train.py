@@ -192,11 +192,18 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
 
                     fig, axs = plt.subplots(2)
                     axs[0].set_yscale("log")
+                    axs[0].set_title("Loss")
+                    axs[0].set_xlabel("Batch number")
+                    axs[0].set_ylabel("MSE mean")
                     axs[0].plot(losses)
 
-                    axs[1].set_ylim([-10, 1])
+                    axs[1].set_title("Accuracy")
+                    axs[1].set_xlabel("Batch number")
+                    axs[1].set_ylabel("R2 Score")
+                    axs[1].set_ylim([-2, 1.1])
                     axs[1].plot(accuracies)
 
+                    fig.tight_layout()
                     plt.savefig("loss_accuracy_plots.png")
                     plt.close(fig)
 
