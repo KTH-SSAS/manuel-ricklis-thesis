@@ -3,13 +3,15 @@ import json
 from matplotlib import colors
 from pyvis.network import Network
 
+from typing import List
+
 from model_generator import model_generator
 from model_generator.model_generator import ModelGenerator
 from value_approximator.graph import attack_graph
 from value_approximator.graph.attack_graph import AttackGraph as AttackGraph
 
 
-def create_attack_graphs_from_model(model: ModelGenerator, min_graph_size=100) -> list[AttackGraph]:
+def create_attack_graphs_from_model(model: ModelGenerator, min_graph_size=100) -> List[AttackGraph]:
     graph = attack_graph.concatenate_model_instances(model)
     model.add_graph(graph)
 
@@ -55,16 +57,17 @@ def create_single_graph(node):
 def create_and_export_attack_graphs_for_learning(prefix: str, amount: int):
     generator = ModelGenerator()
     for i in range(amount):
-        generator.model = generator.generate_model_based_on_random_parameters(4, 2, 8, 4, 5, 1, 3, 1, 4, 2)
+        generator.model = generator.generate_model_based_on_random_parameters(4, 1, 5, 2, 3, 1, 3, 1, 3, 1)
         attack_graphs = create_attack_graphs_from_model(generator)
 
         for j, graph in enumerate(attack_graphs):
-            with open("AttackGraphs/" + prefix + "_" + str(i) + "_" + str(j) + ".json", "w+") as f:
+            with open("AttackGraphs/" + prefix + "_" + str(j) + ".json", "w+") as f:
                 json.dump({
                     "graph_expanded": graph.graph_expanded,
                     "key_indices": graph.key_indices,
                     "rewards": graph.rewards.tolist()
                 }, f)
+        print(f'Exportet graphs of model {i}')
 
 
 # def visualize_graph(graph: dict, V, key_indices, rewards, file_name="graph_visualization"):

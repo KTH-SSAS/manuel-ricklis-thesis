@@ -108,7 +108,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                     key_indices=dictionary["key_indices"],
                     rewards=np.asarray(dictionary["rewards"])
                 )
-                _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES)
+                _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES, device)
                 _node_labels, _ = graph.value_iteration()
                 _topology = build_edge_index(_adjacency_list, len(_node_labels), False)
 
@@ -151,7 +151,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                 optimizer.step()  # apply the gradients to weights
 
             # Calculate the main metric - accuracy
-            accuracy = r2_score(nodes_unnormalized_scores.detach().numpy(), gt_node_labels.detach().numpy())
+            accuracy = r2_score(nodes_unnormalized_scores.cpu().detach().numpy(), gt_node_labels.cpu().detach().numpy())
             accuracies.append(accuracy)
 
             #
@@ -160,8 +160,8 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
 
             if phase == LoopPhase.TRAIN:
                 # Log metrics
-                if config['enable_tensorboard']:
-                    print(f'loss={loss.item()}\naccuracy={accuracy}')
+                #if config['enable_tensorboard']:
+                    #print(f'loss={loss.item()}\Inaccuracy={accuracy}')
                     # writer.add_scalar('training_loss', loss.item(), epoch)
                     # writer.add_scalar('training_acc', accuracy, epoch)
 
@@ -256,7 +256,9 @@ def get_training_args():
         "add_skip_connection": True,
         "bias": True,
         "dropout": 0.0,
-        "device": "cpu"
+        "device": "cuda"
+        "should_test": True,
+        "patience_period": 75
     }
 
     # Wrapping training configuration into a dictionary
