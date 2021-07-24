@@ -17,9 +17,11 @@ import matplotlib.pyplot as plt
 
 def train_gat(config):
     global BEST_VAL_PERF, BEST_VAL_LOSS
-    global accuracies, losses
-    accuracies = []
-    losses = []
+    global val_accuracies, val_losses, test_accuracies, test_losses
+    val_accuracies = []
+    val_losses = []
+    test_accuracies = []
+    test_losses = []
 
     plt.interactive(False)
 
@@ -77,11 +79,12 @@ def train_gat(config):
     # Don't overfit to the test dataset - only when you've fine-tuned your model on the validation dataset should you
     # report your final loss and micro-F1 on the test dataset. Friends don't let friends overfit to the test data. <3
     if config['should_test']:
-        micro_f1 = main_loop(phase=LoopPhase.TEST, device=device)
-        config['test_perf'] = micro_f1
+        main_loop(phase=LoopPhase.TEST, device=device)
+        test_accuracy_mean = np.mean(test_accuracies)
+        config['test_perf'] = test_accuracy_mean
 
         print('*' * 50)
-        print(f'Test micro-F1 = {micro_f1}')
+        print(f'Test accuracy mean = {test_accuracy_mean}')
     else:
         config['test_perf'] = -1
 
@@ -143,7 +146,6 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
             nodes_unnormalized_scores = gat(graph_data)[0]
 
             loss = loss_function(nodes_unnormalized_scores, gt_node_labels.unsqueeze(-1))
-            losses.append(loss.item())
 
             if phase == LoopPhase.TRAIN:
                 optimizer.zero_grad()  # clean the trainable weights gradients in the computational graph (.grad fields)
@@ -152,7 +154,6 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
 
             # Calculate the main metric - accuracy
             accuracy = r2_score(nodes_unnormalized_scores.detach().numpy(), gt_node_labels.detach().numpy())
-            accuracies.append(accuracy)
 
             #
             # Logging
@@ -172,12 +173,13 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                     torch.save(get_training_state(config, gat), os.path.join(CHECKPOINTS_PATH, ckpt_model_name))
 
             elif phase == LoopPhase.VAL:
+                val_accuracies.append(accuracy)
+                val_losses.append(loss.item())
                 # Log metrics
                 if config['enable_tensorboard']:
                     print(f'loss={loss.item()}\naccuracy={accuracy}')
                     # writer.add_scalar('val_loss', loss.item(), epoch)
                     # writer.add_scalar('val_acc', accuracy, epoch)
-
 
                 # Log to console
                 if config['console_log_freq'] is not None and epoch % config['console_log_freq'] == 0:
@@ -192,16 +194,16 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
 
                     fig, axs = plt.subplots(2)
                     axs[0].set_yscale("log")
-                    axs[0].set_title("Loss")
+                    axs[0].set_title("Validation Loss")
                     axs[0].set_xlabel("Batch number")
                     axs[0].set_ylabel("MSE mean")
-                    axs[0].plot(losses)
+                    axs[0].plot(val_losses)
 
-                    axs[1].set_title("Accuracy")
+                    axs[1].set_title("Validation Accuracy")
                     axs[1].set_xlabel("Batch number")
                     axs[1].set_ylabel("R2 Score")
                     axs[1].set_ylim([-2, 1.1])
-                    axs[1].plot(accuracies)
+                    axs[1].plot(val_accuracies)
 
                     fig.tight_layout()
                     plt.savefig("loss_accuracy_plots.png")
@@ -220,7 +222,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                     raise Exception('Stopping the training, the universe has no more patience for this training.')
 
             else:
-                return accuracy  # in the case of test phase we just report back the test accuracy
+                test_accuracies.append(accuracy)
 
     return main_loop  # return the decorated function
 
