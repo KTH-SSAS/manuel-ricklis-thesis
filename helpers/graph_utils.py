@@ -71,8 +71,8 @@ def create_and_export_attack_graphs_for_learning(prefix: str, amount: int, param
         attack_graphs = create_attack_graphs_from_model(generator, 500)
 
         prefix += "_"
-        for key in params:
-            prefix += key
+        for _, item in params.items():
+            prefix += item
 
         for j, graph in enumerate(attack_graphs):
             with open("AttackGraphs/" + prefix + "_" + str(j) + ".json", "w+") as f:
