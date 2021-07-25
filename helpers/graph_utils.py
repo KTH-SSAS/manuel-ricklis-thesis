@@ -72,7 +72,7 @@ def create_and_export_attack_graphs_for_learning(prefix: str, amount: int, param
 
         prefix += "_"
         for _, item in params.items():
-            prefix += item
+            prefix += str(item)
 
         for j, graph in enumerate(attack_graphs):
             with open("AttackGraphs/" + prefix + "_" + str(j) + ".json", "w+") as f:
