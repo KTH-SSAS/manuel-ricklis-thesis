@@ -54,11 +54,25 @@ def create_single_graph(node):
         create_single_graph(child)
 
 
-def create_and_export_attack_graphs_for_learning(prefix: str, amount: int):
+def create_and_export_attack_graphs_for_learning(prefix: str, amount: int, params: dict):
     generator = ModelGenerator()
     for i in range(amount):
-        generator.model = generator.generate_model_based_on_random_parameters(4, 1, 5, 2, 3, 1, 3, 1, 3, 1)
-        attack_graphs = create_attack_graphs_from_model(generator)
+        generator.model = generator.generate_model_based_on_random_parameters(
+            params["networks_mean"],
+            params["networks_sd"],
+            params["services_mean"],
+            params["services_sd"],
+            params["data_mean"],
+            params["data_sd"],
+            params["id_data_mean"],
+            params["id_data_sd"],
+            params["service_id_mean"],
+            params["service_id_sd"])
+        attack_graphs = create_attack_graphs_from_model(generator, 500)
+
+        prefix += "_"
+        for key in params:
+            prefix += key
 
         for j, graph in enumerate(attack_graphs):
             with open("AttackGraphs/" + prefix + "_" + str(j) + ".json", "w+") as f:
