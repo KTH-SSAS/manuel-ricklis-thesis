@@ -57,18 +57,13 @@ def create_single_graph(node):
 def create_and_export_attack_graphs_for_learning(prefix: str, amount: int, params: dict):
     generator = ModelGenerator()
     for i in range(amount):
-        generator.model = generator.generate_model_based_on_random_parameters(
-            params["networks_mean"],
-            params["networks_sd"],
-            params["services_mean"],
-            params["services_sd"],
-            params["data_mean"],
-            params["data_sd"],
-            params["id_data_mean"],
-            params["id_data_sd"],
-            params["service_id_mean"],
-            params["service_id_sd"])
-        attack_graphs = create_attack_graphs_from_model(generator, 500)
+        generator.model = generator.generate_model(
+            params["networks"],
+            params["services"],
+            params["data"],
+            params["id_data"],
+            params["service_id"])
+        attack_graphs = create_attack_graphs_from_model(generator, 200)
 
         prefix += "_"
         for _, item in params.items():
@@ -81,6 +76,7 @@ def create_and_export_attack_graphs_for_learning(prefix: str, amount: int, param
                     "key_indices": graph.key_indices,
                     "rewards": graph.rewards.tolist()
                 }, f)
+            print(f'Exportet graph {j} of model {i}')
         print(f'Exportet graphs of model {i}')
 
 

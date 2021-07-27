@@ -137,7 +137,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
             graph_data_set = graph_data_sets[2]
 
         for i in range(0, len(graph_data_set) - 1, 2):
-            node_features, gt_node_labels, edge_index = get_graph_data(graph_data_set[i:i + 1], device=device)
+            node_features, gt_node_labels, edge_index = get_graph_data(graph_data_set[i:i + 2], device=device)
             graph_data = (node_features, edge_index)
 
             # Do a forwards pass and extract only the relevant node scores (train/val or test ones)
@@ -260,14 +260,17 @@ def get_training_args():
     gat_config = {
         # GNNs, contrary to CNNs, are often shallow (it ultimately depends on the graph properties)
         "num_of_layers": 3,
-        "num_heads_per_layer": [4, 4, 6],
-        "num_features_per_layer": [len(attack_graph.vocabulary) + NUM_INPUT_FEATURES - 1, 256, 256, 1],
+        "num_heads_per_layer": [6, 4, 4],
+        "num_features_per_layer": [len(attack_graph.vocabulary) + NUM_INPUT_FEATURES - 1, 512, 256, 1],
         "add_skip_connection": True,
         "bias": True,
         "dropout": 0.0,
         "device": "cuda",
         "should_test": True,
-        "patience_period": 75
+        "patience_period": 100,
+        "should_test": True,
+        "dataset_name": "NonRandomAttackGraphs",
+        "enable_tensorboard": False
     }
 
     # Wrapping training configuration into a dictionary
