@@ -17,11 +17,10 @@ import matplotlib.pyplot as plt
 
 def train_gat(config):
     global BEST_VAL_PERF, BEST_VAL_LOSS
-    global val_accuracies, val_losses, test_accuracies, test_losses
+    global val_accuracies, val_losses, test_accuracies
     val_accuracies = []
     val_losses = []
     test_accuracies = []
-    test_losses = []
 
     plt.interactive(False)
 
@@ -90,7 +89,7 @@ def train_gat(config):
 
     # Save the latest gat in the binaries directory
     torch.save(
-        get_training_state(config, gat),
+        get_training_state(config, gat, optimizer, loss_fn),
         os.path.join(BINARIES_PATH, get_available_binary_name(config['dataset_name']))
     )
 
@@ -98,28 +97,6 @@ def train_gat(config):
 # Simple decorator function so that I don't have to pass arguments that don't change from epoch to epoch
 def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patience_period, time_start):
     # node_features shape = (N, FIN), edge_index shape = (2, E)
-
-    def get_graph_data(file_names: [], device="cuda"):
-        node_features = []
-        node_labels = []
-        edge_index = []
-        for file_name in file_names:
-            with open(file_name, "r") as f:
-                dictionary = json.load(f)
-                graph = AttackGraph(
-                    graph_expanded=dictionary["graph_expanded"],
-                    key_indices=dictionary["key_indices"],
-                    rewards=np.asarray(dictionary["rewards"])
-                )
-                _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES, device)
-                _node_labels, _ = graph.value_iteration()
-                _topology = build_edge_index(_adjacency_list, len(_node_labels), False)
-
-                node_features.append(_node_features.clone().detach())
-                node_labels.append(torch.tensor(_node_labels, dtype=torch.double, device=device))
-                edge_index.append(torch.tensor(_topology, dtype=torch.long, device=device))
-
-        return torch.cat(node_features, 0), torch.cat(node_labels, 0), torch.cat(edge_index, 1)
 
     def main_loop(phase, device="cuda", epoch=0):
         global BEST_VAL_PERF, BEST_VAL_LOSS, PATIENCE_CNT
@@ -137,7 +114,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
             graph_data_set = graph_data_sets[2]
 
         for i in range(0, len(graph_data_set) - 1, 2):
-            node_features, gt_node_labels, edge_index = get_graph_data(graph_data_set[i:i + 2], device=device)
+            node_features, gt_node_labels, edge_index = get_graph_data(graph_data_set[i:i + 2], config, device=device)
             graph_data = (node_features, edge_index)
 
             # Do a forwards pass and extract only the relevant node scores (train/val or test ones)
@@ -161,16 +138,17 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
 
             if phase == LoopPhase.TRAIN:
                 # Log metrics
-                #if config['enable_tensorboard']:
-                    #print(f'loss={loss.item()}\Inaccuracy={accuracy}')
-                    # writer.add_scalar('training_loss', loss.item(), epoch)
-                    # writer.add_scalar('training_acc', accuracy, epoch)
+                # if config['enable_tensorboard']:
+                # print(f'loss={loss.item()}\Inaccuracy={accuracy}')
+                # writer.add_scalar('training_loss', loss.item(), epoch)
+                # writer.add_scalar('training_acc', accuracy, epoch)
 
                 # Save model checkpoint
                 if config['checkpoint_freq'] is not None and (epoch + 1) % config['checkpoint_freq'] == 0:
                     ckpt_model_name = f'gat_{config["dataset_name"]}{epoch + 1}.pth'
                     config['test_perf'] = -1
-                    torch.save(get_training_state(config, gat), os.path.join(CHECKPOINTS_PATH, ckpt_model_name))
+                    torch.save(get_training_state(config, gat, optimizer, loss_function),
+                               os.path.join(CHECKPOINTS_PATH, ckpt_model_name))
 
             elif phase == LoopPhase.VAL:
                 val_accuracies.append(accuracy)
@@ -202,7 +180,7 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                     axs[1].set_title("Validation Accuracy")
                     axs[1].set_xlabel("Batch number")
                     axs[1].set_ylabel("R2 Score")
-                    axs[1].set_ylim([-2, 1.1])
+                    axs[1].set_ylim([-0.1, 1.1])
                     axs[1].plot(val_accuracies)
 
                     fig.tight_layout()
@@ -225,6 +203,29 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                 test_accuracies.append(accuracy)
 
     return main_loop  # return the decorated function
+
+
+def get_graph_data(file_names: [], config, device="cuda"):
+    node_features = []
+    node_labels = []
+    edge_index = []
+    for file_name in file_names:
+        with open(file_name, "r") as f:
+            dictionary = json.load(f)
+            graph = AttackGraph(
+                graph_expanded=dictionary["graph_expanded"],
+                key_indices=dictionary["key_indices"],
+                rewards=np.asarray(dictionary["rewards"])
+            )
+            _node_features, _adjacency_list = parse_features(graph, NUM_INPUT_FEATURES, device)
+            _node_labels, _ = graph.value_iteration()
+            _topology = build_edge_index(_adjacency_list, len(_node_labels), False)
+
+            node_features.append(_node_features.clone().detach())
+            node_labels.append(torch.tensor(_node_labels, dtype=torch.double, device=device))
+            edge_index.append(torch.tensor(_topology, dtype=torch.long, device=device))
+
+    return torch.cat(node_features, 0), torch.cat(node_labels, 0), torch.cat(edge_index, 1)
 
 
 def get_training_args():
@@ -265,11 +266,11 @@ def get_training_args():
         "add_skip_connection": True,
         "bias": True,
         "dropout": 0.0,
-        "device": "cuda",
+        "device": "cpu",
+        "patience_period": 75,
+        "num_of_epochs": 250,
         "should_test": True,
-        "patience_period": 100,
-        "should_test": True,
-        "dataset_name": "NonRandomAttackGraphs",
+        "dataset_name": "test",
         "enable_tensorboard": False
     }
 

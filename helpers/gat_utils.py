@@ -3,6 +3,8 @@ import re
 
 import numpy as np
 import torch
+
+from value_approximator.gat.gat import GAT
 from value_approximator.graph import attack_graph
 from value_approximator.graph.attack_graph import AttackGraph
 from helpers.constants import *
@@ -86,7 +88,7 @@ def build_edge_index(adjacency_list_dict, num_of_nodes, add_self_edges=False):
     return edge_index
 
 
-def get_training_state(training_config, model):
+def get_training_state(training_config, model: GAT, optimizer, loss_fn):
     training_state = {
         # "commit_hash": git.Repo(search_parent_directories=True).head.object.hexsha,
 
@@ -104,8 +106,12 @@ def get_training_state(training_config, model):
         "bias": training_config['bias'],
         "dropout": training_config['dropout'],
 
-        # Model state
-        "state_dict": model.state_dict()
+        # Model state, loss and optimizer state
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "loss_fn": loss_fn,
+        "lr": training_config['lr'],
+        "weight_decay": training_config['weight_decay']
     }
 
     return training_state
