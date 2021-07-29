@@ -107,25 +107,40 @@ def test_predictions(path: str, device):
 
             graph_predictions = {}
             for node, children in adjacency_list.items():
-                tpl = (node, node_labels[node].item(), nodes_unnormalized_scores[0].item())
+                tpl = (node, node_labels[node].item(), nodes_unnormalized_scores[node].item())
                 graph_predictions[tpl] = []
                 for child in children:
                     graph_predictions[tpl].append(
                         (child, node_labels[child].item(), nodes_unnormalized_scores[child].item()))
 
-            x = []
+            scores = []
             for node, children in graph_predictions.items():
-                predictions_1 = []
-                predictions_2 = []
+                predictions_gt = []
+                predictions_nn = []
                 for child in children:
-                    predictions_1.append(child[1])
-                    predictions_2.append(child[2])
+                    predictions_gt.append(child[1])
+                    predictions_nn.append(child[2])
 
-                if len(predictions_1) > 0:
-                    if predictions_1.index(max(predictions_1)) == predictions_2.index(max(predictions_2)):
-                        x.append(1)
+                if len(predictions_gt) > 0:
+                    m_gt = max(predictions_gt)
+                    maxes_gt = [i for i, j in enumerate(predictions_gt) if j == m_gt]
+                    m_nn = max(predictions_nn)
+                    maxes_nn = [i for i, j in enumerate(predictions_nn) if j == m_nn]
+
+                    if len(maxes_nn) > 1:
+                        if any(m in maxes_gt for m in maxes_nn):
+                            scores.append(1)
+                        else:
+                            scores.append(0)
+                    elif len(maxes_gt) > 1:
+                        if any(m in maxes_nn for m in maxes_gt):
+                            scores.append(1)
+                        else:
+                            scores.append(0)
                     else:
-                        x.append(0)
-            print(sum(x)/len(x))
-
-            break
+                        if predictions_nn.index(max(predictions_nn)) == predictions_gt.index(max(predictions_gt)):
+                            scores.append(1)
+                        else:
+                            scores.append(0)
+            print(sum(scores) / len(scores))
+            print()
