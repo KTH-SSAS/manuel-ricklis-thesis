@@ -36,6 +36,7 @@ in markdown. -->
 - [Quick Info](#quick-info)
   * [Project links](#project-links)
 - [Description](#description)
+- [How to use](#how-to-use)
 - [Work Products](#work-products)
 - [Resources](#resources)
 
