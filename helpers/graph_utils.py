@@ -32,7 +32,6 @@ def create_attack_graphs_from_model(model: ModelGenerator, min_graph_size=100) -
 
         key_indices = dict(zip(graph_expanded.keys(), [i for i in range(len(graph_expanded))]))
         rewards = attack_graph.build_rewards(key_indices=key_indices, graph_expanded=graph_expanded)
-        # attack_graph.update_vocabulary(graph_expanded)
 
         attack_graphs.append(
             AttackGraph(graph_expanded, key_indices, rewards)
@@ -54,59 +53,29 @@ def create_single_graph(node):
         create_single_graph(child)
 
 
-def create_and_export_attack_graphs_for_learning(prefix: str, amount: int, params: dict):
+def create_and_export_attack_graphs_for_learning(prefix: str, params: dict):
     generator = ModelGenerator()
-    for i in range(amount):
-        generator.model = generator.generate_model(
-            params["networks"],
-            params["services"],
-            params["data"],
-            params["id_data"],
-            params["service_id"])
-        attack_graphs = create_attack_graphs_from_model(generator, 200)
+    generator.model = generator.generate_model(
+        params["networks"],
+        params["services"],
+        params["data"],
+        params["id_data"],
+        params["service_id"])
+    attack_graphs = create_attack_graphs_from_model(generator, 200)
 
-        prefix += "_"
-        for _, item in params.items():
-            prefix += str(item)
+    prefix += "_"
+    for _, item in params.items():
+        prefix += str(item)
 
-        for j, graph in enumerate(attack_graphs):
-            with open("AttackGraphs/" + prefix + "_" + str(j) + ".json", "w+") as f:
-                json.dump({
-                    "graph_expanded": graph.graph_expanded,
-                    "key_indices": graph.key_indices,
-                    "rewards": graph.rewards.tolist()
-                }, f)
-            print(f'Exportet graph {j} of model {i}')
-        print(f'Exportet graphs of model {i}')
-
-
-# def visualize_graph(graph: dict, V, key_indices, rewards, file_name="graph_visualization"):
-#     net = Network(height='900px', width='75%', notebook=True)
-#
-#     max_v = max(V)
-#     min_v = min(V)
-#     for key, items in graph.items():
-#         key_idx = key_indices[key]
-#         v = (V[key_idx] - min_v) / (max_v - min_v)
-#         color = colors.to_hex([v, 0.0, 1 - v])
-#         net.add_node(key, key + "\n" + '%.2f' % V[key_idx], title=key, color=color)
-#         for item in items:
-#             item_idx = key_indices[item]
-#             v = (V[item_idx] - min_v) / (max_v - min_v)
-#             color = colors.to_hex([v, 0.0, 1 - v])
-#             net.add_node(item, item + "\n" + '%.2f' % V[item_idx], title=item, color=color)
-#
-#             net.add_edge(key, item, title=rewards[key_idx, item_idx])
-#
-#     # enable buttons to change and generate options (omit filter for all buttons)
-#     # NOTE: showing buttons AND setting options does not work...
-#     # net.show_buttons(filter_=['physics'])
-#
-#     # load options and override standard
-#     with open("value_approximator/Resources/pyvis_options.json") as f:
-#         net.set_options(f.read())
-#
-#     net.show("GraphVisualizations/" + file_name + ".html")
+    for j, graph in enumerate(attack_graphs):
+        with open("AttackGraphs/" + prefix + "_" + str(j) + ".json", "w+") as f:
+            json.dump({
+                "graph_expanded": graph.graph_expanded,
+                "key_indices": graph.key_indices,
+                "rewards": graph.rewards.tolist()
+            }, f)
+        print(f'Exportet graph {j}')
+    print(f'Exportet all graphs of model\n')
 
 
 def visualize_graph(attack_graph: AttackGraph, file_name="graph_visualization"):

@@ -33,8 +33,6 @@ class AttackGraph:
 
 UNREACHABLE = 1000000
 object_dict, ttc_dict = read_object_specifications()
-# with open("value_approximator/Resources/vocabulary.json", "r") as f:
-#     vocabulary = json.load(f)
 
 with open("value_approximator/Resources/Mappings/assets_and_steps.json") as f:
     dictionary = json.load(f)
@@ -244,14 +242,3 @@ def get_entry(parent, child):
     for c in child.split("|"):
         if c not in parent:
             return c
-
-
-# def update_vocabulary(graph: dict):
-#     # continue the counting from the last entry in the vocabulary if not empty
-#     counter = 0 if len(vocabulary) == 0 else list(vocabulary.items())[1][-1] + 1
-#     for key in graph:
-#         if key not in vocabulary:
-#             vocabulary[key] = counter
-#             counter += 1
-#     with open("value_approximator/Resources/vocabulary.json", "w") as vocab:
-#         json.dump(vocabulary, vocab)
