@@ -62,12 +62,19 @@ information available. <br>
 This work aims to clarify the question of how well a neural network can approximate the
 optimal policy of a partially observable attack graph. The generated attack graphs used for
 supervised learning are heavily inspired by [coreLang](https://github.com/mal-lang/coreLang).
+
+## How to use
+- Generate attack graphs with prefixes `train`, `val` and `test`
+- Modify the training configuration in `value_approximator/gat/train.py`
+- Run the training
+- Optionally, test the prediction accuracy with the trained model that saved in `models/binaries` (the final model) or `models/checkpoints`
+
 ## Work Products
 
 - [x] Build attack graph from generated model
 - [x] Calculated value function
-- [ ] Adapt GNN for attack graphs
-- [ ] First GNN learning on attack graphs
+- [x] Adapt GNN for attack graphs
+- [x] First GNN learning on attack graphs
 - [ ] Analyse results
 
 
