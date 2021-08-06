@@ -38,7 +38,7 @@ def parse_features(graph: AttackGraph, number_of_features, device):
     N = len(graph.graph_expanded)
 
     # the node feature matrix
-    M = torch.ones((N, len(vocabulary) + (number_of_features - 1)), dtype=torch.double, device=device)
+    M = torch.ones((N, number_of_features), dtype=torch.double, device=device)
 
     adjacency_matrix = {}
     for step, children in graph.graph_expanded.items():
