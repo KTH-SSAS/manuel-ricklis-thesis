@@ -141,22 +141,27 @@ def get_main_loop(graph_data_sets, config, gat, loss_function, optimizer, patien
                     # Plotting
                     #
 
-                    fig, axs = plt.subplots(2)
-                    axs[0].set_yscale("log")
-                    axs[0].set_title("Validation Loss")
-                    axs[0].set_xlabel("Batch number")
-                    axs[0].set_ylabel("MSE mean")
-                    axs[0].plot(val_losses)
+                    plt.yscale("log")
+                    plt.title("Validation Loss")
+                    plt.xlabel("Batch number")
+                    plt.ylabel("MSE mean")
+                    plt.plot(val_losses)
+                    plt.savefig("loss.png")
+                    plt.close()
 
-                    axs[1].set_title("Validation Accuracy")
-                    axs[1].set_xlabel("Batch number")
-                    axs[1].set_ylabel("R2 Score")
-                    axs[1].set_ylim([-0.1, 1.1])
-                    axs[1].plot(val_accuracies)
+                    with open("loss.npy", "wb") as f:
+                        np.save(f, np.array(val_losses))
 
-                    fig.tight_layout()
-                    plt.savefig("loss_accuracy_plots.png")
-                    plt.close(fig)
+                    plt.title("Validation Accuracy")
+                    plt.xlabel("Batch number")
+                    plt.ylabel("R2 Score")
+                    plt.ylim([-0.1, 1.1])
+                    plt.plot(val_accuracies)
+                    plt.savefig("accuracy.png")
+                    plt.close()
+
+                    with open("accuracy.npy", "wb") as f:
+                        np.save(f, np.array(val_accuracies))
 
                 if accuracy > BEST_VAL_PERF or loss.item() < BEST_VAL_LOSS:
                     BEST_VAL_PERF = max(accuracy, BEST_VAL_PERF)
