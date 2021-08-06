@@ -1,59 +1,15 @@
-import numpy as np
-import json
 from matplotlib import colors
 from pyvis.network import Network
 
-from typing import List
-
-from model_generator import model_generator
-from model_generator.model_generator import ModelGenerator
-from value_approximator.graph import attack_graph
 from value_approximator.graph.attack_graph import AttackGraph as AttackGraph
-
-
-def create_attack_graphs_from_model(model: ModelGenerator, min_graph_size=100) -> List[AttackGraph]:
-    graph = attack_graph.concatenate_model_instances(model)
-    model.add_graph(graph)
-
-    graph_and_parents = attack_graph.build_and_parents(model)
-    model.add_graph_and_parents(graph_and_parents)
-
-    children = [item for items in graph.values() for item in items]
-    eps = [key for key in graph if key not in children]
-
-    attack_graphs = []
-    for entry_point in eps:
-        attack_graph.expand_graph(model, entry_point)
-        graph_expanded = attack_graph.graph_to_expand
-        attack_graph.graph_to_expand = {}
-
-        if len(graph_expanded) < min_graph_size:
-            continue
-
-        key_indices = dict(zip(graph_expanded.keys(), [i for i in range(len(graph_expanded))]))
-        rewards = attack_graph.build_rewards(key_indices=key_indices, graph_expanded=graph_expanded)
-
-        attack_graphs.append(
-            AttackGraph(graph_expanded, key_indices, rewards)
-        )
-
-    return attack_graphs
-
-
-single_graph: dict
-graph_tmp: dict
-
-
-def create_single_graph(node):
-    if node in single_graph.keys():
-        return
-    single_graph[node] = []
-    for child in graph_tmp[node]:
-        single_graph[node].append(child)
-        create_single_graph(child)
+from value_approximator.graph.attack_graph_utils import *
 
 
 def create_and_export_attack_graphs_for_learning(prefix: str, params: dict):
+    """
+    Creates a model with the given parameters and exports all resulting attack graphs with the parameters appended
+    to the provided prefix
+    """
     generator = ModelGenerator()
     generator.model = generator.generate_model(
         params["networks"],
@@ -61,21 +17,50 @@ def create_and_export_attack_graphs_for_learning(prefix: str, params: dict):
         params["data"],
         params["id_data"],
         params["service_id"])
-    attack_graphs = create_attack_graphs_from_model(generator, 200)
 
     prefix += "_"
     for _, item in params.items():
         prefix += str(item)
 
-    for j, graph in enumerate(attack_graphs):
-        with open("AttackGraphs/" + prefix + "_" + str(j) + ".json", "w+") as f:
-            json.dump({
-                "graph_expanded": graph.graph_expanded,
-                "key_indices": graph.key_indices,
-                "rewards": graph.rewards.tolist()
-            }, f)
-        print(f'Exportet graph {j}')
-    print(f'Exportet all graphs of model\n')
+    create_and_export_attack_graphs_from_model(generator, prefix, 200)
+
+
+def create_and_export_attack_graphs_from_model(model: ModelGenerator, prefix: str, min_graph_size=100):
+    """
+    Builds up single, expanded attack graphs from the given model and exports them separately
+    """
+    graph = concatenate_model_instances(model)
+    model.add_graph(graph)
+
+    graph_and_parents = build_and_parents(model)
+    model.add_graph_and_parents(graph_and_parents)
+
+    children = [item for items in graph.values() for item in items]
+    eps = [key for key in graph if key not in children]
+
+    for entry_point in eps:
+        expand_graph(model, entry_point)
+
+        if len(graph_to_expand) < min_graph_size:
+            continue
+
+        key_indices = dict(zip(graph_to_expand.keys(), [i for i in range(len(graph_to_expand))]))
+        rewards = build_rewards(key_indices=key_indices, graph_expanded=graph_to_expand)
+
+        export_attack_graph_for_learning(prefix, AttackGraph(graph_to_expand, key_indices, rewards))
+        graph_to_expand.clear()
+
+
+def export_attack_graph_for_learning(prefix: str, attack_graph: AttackGraph):
+    """
+    Writes the provided attack graph into a json file in the AttackGraphs directory
+    """
+    with open("AttackGraphs/" + prefix + ".json", "w+") as f:
+        json.dump({
+            "graph_expanded": attack_graph.graph_expanded,
+            "key_indices": attack_graph.key_indices,
+            "rewards": attack_graph.rewards.tolist()
+        }, f)
 
 
 def visualize_graph(attack_graph: AttackGraph, file_name="graph_visualization"):
@@ -112,15 +97,14 @@ def visualize_graph(attack_graph: AttackGraph, file_name="graph_visualization"):
     net.show("GraphVisualizations/" + file_name + ".html")
 
 
-def print_sample_graph_values():
-    """
-    Performs value iteration and prints it's results
-    """
-    np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
-    graph = AttackGraph(model_generator.getModel())
-    V, Q = graph.value_iteration()
-    i = 0
-    for key in graph.graph_expanded.keys():
-        if V[i] > 0:
-            print(f'{graph.key_indices[key]}   {key} - {V[i]}')
-        i = i + 1
+single_graph: dict
+graph_tmp: dict
+
+
+def create_single_graph(node):
+    if node in single_graph.keys():
+        return
+    single_graph[node] = []
+    for child in graph_tmp[node]:
+        single_graph[node].append(child)
+        create_single_graph(child)

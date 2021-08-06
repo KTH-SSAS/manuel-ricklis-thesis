@@ -8,13 +8,15 @@ import matplotlib.pyplot as plt
 from torch import nn
 import numpy as np
 
-from helpers.constants import NUM_INPUT_FEATURES
 from value_approximator.gat.gat import GAT
 from value_approximator.gat.train import get_graph_data, AttackGraph, parse_features, build_edge_index
 
 
-def test(path: str, device):
-    gat_state = torch.load(path, map_location=torch.device(device))
+def test(model_file_path: str, device):
+    """
+    Test an existing model with the test data set
+    """
+    gat_state = torch.load(model_file_path, map_location=torch.device(device))
     gat = GAT(
         num_of_layers=gat_state['num_of_layers'],
         num_heads_per_layer=gat_state['num_heads_per_layer'],
@@ -70,8 +72,11 @@ def test(path: str, device):
     plt.close(fig)
 
 
-def test_predictions(path: str, device):
-    gat_state = torch.load(path, map_location=torch.device(device))
+def test_predictions(model_file_path: str, device):
+    """
+    Checks if the actions based on predicted values equals the actions based on the ground truth labels
+    """
+    gat_state = torch.load(model_file_path, map_location=torch.device(device))
     gat = GAT(
         num_of_layers=gat_state['num_of_layers'],
         num_heads_per_layer=gat_state['num_heads_per_layer'],
@@ -95,7 +100,7 @@ def test_predictions(path: str, device):
                 key_indices=dictionary["key_indices"],
                 rewards=np.asarray(dictionary["rewards"])
             )
-            node_features, adjacency_list = parse_features(graph, NUM_INPUT_FEATURES, device)
+            node_features, adjacency_list = parse_features(graph, gat_state['num_features_per_layer'][0], device)
             _node_labels, _ = graph.value_iteration()
             _topology = build_edge_index(adjacency_list, len(_node_labels), False)
 

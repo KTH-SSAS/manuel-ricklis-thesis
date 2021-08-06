@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
 
-# from https://github.com/gordicaleksa/pytorch-GAT/blob/main/models/definitions/GAT.py
 from value_approximator.gat.base_gat import BaseGAT
 
+
+# from https://github.com/gordicaleksa/pytorch-GAT/blob/main/models/definitions/GAT.py
 class GAT(torch.nn.Module):
     def __init__(self, num_of_layers, num_heads_per_layer, num_features_per_layer, add_skip_connection=True, bias=True,
                  dropout=0.6, log_attention_weights=False):
@@ -16,8 +17,8 @@ class GAT(torch.nn.Module):
         for i in range(num_of_layers):
             layer = GATLayer(
                 num_in_features=num_features_per_layer[i] * num_heads_per_layer[i],  # consequence of concatenation
-                num_out_features=num_features_per_layer[i+1],
-                num_of_heads=num_heads_per_layer[i+1],
+                num_out_features=num_features_per_layer[i + 1],
+                num_of_heads=num_heads_per_layer[i + 1],
                 concat=True if i < num_of_layers - 1 else False,  # last gat layer does mean avg, the others do concat
                 activation=nn.ELU() if i < num_of_layers - 1 else None,  # last layer just outputs raw scores
                 dropout_prob=dropout,

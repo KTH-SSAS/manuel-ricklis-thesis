@@ -1,6 +1,5 @@
 import json
 import re
-import glob
 
 
 def read_object_specifications(from_mal=False) -> [dict, dict]:
@@ -45,30 +44,13 @@ def read_object_specifications(from_mal=False) -> [dict, dict]:
                             if assetMatch.group(3) not in ["Vulnerability", "Exploit"]:
                                 objects_dict[activeAsset] = objects_dict[assetMatch.group(3)].copy()
 
-        with open("value_approximator/Resources/objectSpecification_out.json", "w") as f:
+        with open("Resources/objectSpecification_out.json", "w") as f:
             json.dump(objects_dict, f)
-        with open("value_approximator/Resources/ttc_specification_out.json", "w") as f:
+        with open("Resources/ttc_specification_out.json", "w") as f:
             json.dump(ttc_dict, f)
     else:
-        with open("value_approximator/Resources/objectSpecification_out.json", "r") as f:
+        with open("Resources/objectSpecification_out.json", "r") as f:
             objects_dict = json.load(f)
-        with open("value_approximator/Resources/ttc_specification_out.json", "r") as f:
+        with open("Resources/ttc_specification_out.json", "r") as f:
             ttc_dict = json.load(f)
     return [objects_dict, ttc_dict]
-
-
-# NOTE: Not in use with AND step expansion
-def get_vocabularies():
-    """
-    Reads the vocabularies for attack step names, asset types and asset names
-    Each entry is assigned an integer value
-    """
-    # load integer mappings
-    with open("value_approximator/Resources/vocabularies.json", "r") as f:
-        input_vocab = json.load(f)
-    # build a vocabulary for each feature that will use embeddings
-    vocabularies = {}
-    for key in input_vocab.keys():
-        vocabularies[key] = {k: i for i, k in enumerate(input_vocab[key])}
-
-    return vocabularies

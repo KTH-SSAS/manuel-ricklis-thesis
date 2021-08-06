@@ -25,7 +25,7 @@ venv/
 
 *.idea
 *.iml
-value_approximator/Resources/graph.json
+Resources/graph.json
 AttackGraphs/*.json
 models/binaries/*.pth
 models/checkpoints/*.pth
