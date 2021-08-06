@@ -44,7 +44,7 @@ def parse_features(graph: AttackGraph, number_of_features, device):
     for step, children in graph.graph_expanded.items():
         M[graph.key_indices[step], STEP:STEP + len(vocabulary)] = get_feature_vector_from_expanded_node_name(step,
                                                                                                              device)
-        step_rewards = [reward for reward in graph.rewards[:, graph.key_indices[step]] if reward != -999]
+        step_rewards = [reward for reward in graph.rewards[graph.key_indices[step], :] if reward != -999]
         M[graph.key_indices[step], REWARD] = np.mean(step_rewards) if len(step_rewards) > 0 else -999
         M[graph.key_indices[step], RANK] = len(graph.graph_expanded[step])
 
