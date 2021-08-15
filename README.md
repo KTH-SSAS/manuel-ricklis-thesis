@@ -65,7 +65,7 @@ optimal policy of a partially observable attack graph. The generated attack grap
 supervised learning are heavily inspired by [coreLang](https://github.com/mal-lang/coreLang).
 
 ## How to use
-- Generate attack graphs with prefixes `train`, `val` and `test`
+- Generate attack graphs with prefixes `train`, `val` and `test` and save them in `AttackGraphs`
 - Modify the training configuration in `value_approximator/gat/train.py`
 - Run the training
 - Optionally, test the prediction accuracy with the trained model that saved in `models/binaries` (the final model) or `models/checkpoints`
@@ -76,7 +76,8 @@ supervised learning are heavily inspired by [coreLang](https://github.com/mal-la
 - [x] Calculated value function
 - [x] Adapt GNN for attack graphs
 - [x] First GNN learning on attack graphs
-- [ ] Analyse results
+- [x] Analyse results
+- [x] Reiterate learning and conclude
 
 
 ## Resources
