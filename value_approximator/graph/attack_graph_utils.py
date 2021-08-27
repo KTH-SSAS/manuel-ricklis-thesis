@@ -10,7 +10,7 @@ from random import random
 from model_generator.model_generator import ModelGenerator
 
 # A large value to reflect an unreachable transition (infinity values lead to NaN entries during the machine learning)
-UNREACHABLE = 1000000
+UNREACHABLE = 999
 
 # The rewards and ttc distributions
 object_dict, ttc_dict = read_object_specifications()
@@ -117,13 +117,10 @@ def expansion_loop(model: ModelGenerator, node):
     if node in graph_to_expand:
         return
     graph_to_expand[node] = []
-    # sub_node = single node as found in original graph
-    for sub_node in node.split("|"):
-        # children of each sub_node
+    for sub_node in node.split("|"):  # sub_node = single node as found in original graph
         for child in model.graph[sub_node]:
             if child not in node and sort(node, child) not in graph_to_expand[node]:
-                # child is an AND step
-                if child in model.graph_and_parents:
+                if child in model.graph_and_parents:  # child is an AND step
                     condition_fulfilled = True
                     for parent in model.graph_and_parents[child]:
                         condition_fulfilled = condition_fulfilled and parent in node
