@@ -99,7 +99,9 @@ def test_predictions(model_file_path: str, device):
     gat.load_state_dict(gat_state["model_state_dict"])
     gat.eval()
 
-    test_set = glob(f'AttackGraphs/test_[0-9]*.json')
+    test_set = glob(f'AttackGraphs/train_[0-9]*.json')
+
+    prediction_accuracies = []
 
     for i in range(len(test_set)):
         with open(test_set[i], "r") as f:
@@ -154,25 +156,17 @@ def test_predictions(model_file_path: str, device):
                             scores.append(1)
                         else:
                             scores.append(0)
-            print(sum(scores) / len(scores))
+            prediction_accuracies.append(sum(scores) / len(scores))
+            print(prediction_accuracies[-1])
             print()
+    variance = np.sqrt(
+        sum(
+            np.square(
+                np.array(prediction_accuracies) - (np.ones(len(prediction_accuracies)) * np.mean(prediction_accuracies))
+            )) / len(test_set))
+    print(f'Variance = {variance}')
 
-
-def r2_baseline():
-    test_set = glob(f'AttackGraphs/test_[0-9]*.json')
-    scores = []
-    for i in range(len(test_set)):
-        with open(test_set[i], "r") as f:
-            dictionary = json.load(f)
-            graph = AttackGraph(
-                graph_expanded=dictionary["graph_expanded"],
-                key_indices=dictionary["key_indices"],
-                rewards=np.asarray(dictionary["rewards"])
-            )
-
-            v, _ = graph.value_iteration()
-            scores.append(r2_score(np.ones(len(v)) * (sum(v) / len(v)), v))
-    print(f'r2 baseline is {sum(scores) / len(scores)}')
+    print(f'Total score = {sum(prediction_accuracies) / len(prediction_accuracies)}')
 
 
 def prediction_baseline():
