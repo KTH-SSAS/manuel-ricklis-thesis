@@ -195,7 +195,7 @@ def prediction_baseline():
                     graph_predictions[node].append(v[child])
 
             for _, children in graph_predictions.items():
-                if len(children) > 0:
+                if len(children) > 1:
                     maxes_gt = [i for i, j in enumerate(children) if j == max(children)]
                     scores.append(len(maxes_gt) / len(children))
                 else:
