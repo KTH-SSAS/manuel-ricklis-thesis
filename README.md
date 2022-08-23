@@ -47,7 +47,7 @@ in markdown. -->
 - Examiner: [György Dán](https://www.kth.se/profile/gyuri)
 - Active members:
   - [Sotirios Katsikeas](https://www.kth.se/profile/sotkat)
-- Status: running :green_circle:
+- Status: Finished
 - Timeline: [VT-21](https://github.com/KTH-SSAS/manuel-ricklis-thesis/milestones)
 
 ### Project links
